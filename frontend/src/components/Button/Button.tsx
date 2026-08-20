@@ -12,7 +12,7 @@ export default function Button({
   type = "primary",
 }: ButtonProps) {
   const baseStyles =
-    "px-3.5 py-1.5 rounded-md text-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors";
+    "px-3.5 py-1.5 rounded-md text-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors cursor-pointer";
   const typeStyles = {
     primary:
       "bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-600",
