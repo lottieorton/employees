@@ -3,6 +3,7 @@ package io.nology.employees.role;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.nology.employees.common.exceptions.NotFoundException;
 import io.nology.employees.role.dtos.CreateRoleRequest;
 import io.nology.employees.role.dtos.RoleResponse;
 import io.nology.employees.role.dtos.UpdateRoleRequest;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/roles")
-// @Tag(name = "Roles Controller")
 public class RolesController {
     private final RoleService roleService;
 
@@ -37,8 +37,9 @@ public class RolesController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RoleResponse> findRoleById(@PathVariable Long id) throws Exception {
-        Role result = this.roleService.findById(id).orElseThrow(() -> new Exception("Cant find"));
+    public ResponseEntity<RoleResponse> findRoleById(@PathVariable Long id) {
+        Role result = this.roleService.findById(id)
+        .orElseThrow(() -> new NotFoundException("Could not find role with id " + id));
         return ResponseEntity.ok(RoleResponse.of(result));
     }
 
@@ -49,18 +50,19 @@ public class RolesController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<RoleResponse> updateRoleById(@PathVariable Long id, @Valid @RequestBody UpdateRoleRequest data) throws Exception {
-        Role result = this.roleService.updateById(id, data).orElseThrow(() -> new Exception("Could not find role with id " + id));
+    public ResponseEntity<RoleResponse> updateRoleById(@PathVariable Long id, @Valid @RequestBody UpdateRoleRequest data) {
+        Role result = this.roleService.updateById(id, data)
+        .orElseThrow(() -> new NotFoundException("Could not find role with id " + id));
         return ResponseEntity.ok(RoleResponse.of(result));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRoleById(@PathVariable Long id) throws Exception {
+    public ResponseEntity<Void> deleteRoleById(@PathVariable Long id) {
         boolean isDeleted = this.roleService.deleteById(id);
         if(isDeleted) {
             return ResponseEntity.noContent().build();
         }
-        throw new Exception("Could not find role with id " + id);
+        throw new NotFoundException("Could not find role with id " + id);
     }
     
 }
