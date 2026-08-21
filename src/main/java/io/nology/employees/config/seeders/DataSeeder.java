@@ -7,6 +7,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import io.nology.employees.address.AddressRepository;
+import io.nology.employees.address.entities.Address;
 import io.nology.employees.role.RoleRepository;
 import io.nology.employees.role.entities.Role;
 import io.nology.employees.role.entities.SeniorityLevel;
@@ -15,9 +17,11 @@ import io.nology.employees.role.entities.SeniorityLevel;
 @Profile({"dev"})
 public class DataSeeder implements CommandLineRunner {
     private final RoleRepository roleRepo;
+    private final AddressRepository addressRepo;
 
-    public DataSeeder(RoleRepository roleRepo) {
+    public DataSeeder(RoleRepository roleRepo, AddressRepository addressRepo) {
         this.roleRepo = roleRepo;
+        this.addressRepo = addressRepo;
     }
 
     private record RoleSeedData(String name, SeniorityLevel seniorityLevel) {}
@@ -45,6 +49,27 @@ public class DataSeeder implements CommandLineRunner {
                 rolesToSave.add(newRole);
             }
             roleRepo.saveAllAndFlush(rolesToSave);
+        }
+
+        if(addressRepo.count() == 0) {
+            Address address1 = new Address();
+            address1.setUnitNumber("30");
+            address1.setStreetAddress("Park Lane");
+            address1.setAddressLine2("Leicester Square");
+            address1.setCity("London");
+            address1.setStateProvinceRegion("Mayfair");
+            address1.setPostalCode("E1 1GB");
+            address1.setCountry("England");
+            addressRepo.saveAndFlush(address1);
+            Address address2 = new Address();
+            address2.setUnitNumber("86");
+            address2.setStreetAddress("Wallaby Way");
+            address2.setAddressLine2("Opera House View Parade");
+            address2.setCity("Sydney");
+            address2.setStateProvinceRegion("Darling Harbour");
+            address2.setPostalCode("2000");
+            address2.setCountry("Australia");
+            addressRepo.saveAndFlush(address2);
         }
     }
 }
