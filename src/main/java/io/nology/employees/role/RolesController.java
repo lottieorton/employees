@@ -8,6 +8,7 @@ import io.nology.employees.role.dtos.CreateRoleRequest;
 import io.nology.employees.role.dtos.RoleResponse;
 import io.nology.employees.role.dtos.UpdateRoleRequest;
 import io.nology.employees.role.entities.Role;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/roles")
+@Tag(name = "Roles Controller")
 public class RolesController {
     private final RoleService roleService;
 

@@ -3,6 +3,7 @@ package io.nology.employees.role;
 import java.util.List;
 import java.util.Optional;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import io.nology.employees.role.dtos.CreateRoleRequest;
@@ -13,9 +14,11 @@ import io.nology.employees.role.entities.Role;
 public class RoleService {
 
     private final RoleRepository repo;
+    private final ModelMapper mapper;
 
-    public RoleService(RoleRepository repo) {
+    public RoleService(RoleRepository repo, ModelMapper mapper) {
         this.repo = repo;
+        this.mapper = mapper;
     }
 
     public List<Role> findAll() {
@@ -27,9 +30,7 @@ public class RoleService {
     }
 
     public Role create(CreateRoleRequest data) {
-        Role createdRole = new Role();
-        createdRole.setName(data.getName().trim());
-        createdRole.setSeniorityLevel(data.getSeniorityLevel());
+        Role createdRole = this.mapper.map(data, Role.class);
         this.repo.saveAndFlush(createdRole);
         return createdRole;
     }
@@ -40,12 +41,7 @@ public class RoleService {
             return result;
         }
         Role foundRole = result.get();
-        if(data.getName() != null) {
-            foundRole.setName(data.getName().trim());
-        }
-        if(data.getSeniorityLevel() != null) {
-            foundRole.setSeniorityLevel(data.getSeniorityLevel());
-        }
+        this.mapper.map(data, foundRole);
         this.repo.saveAndFlush(foundRole);
         return Optional.of(foundRole);
     }
