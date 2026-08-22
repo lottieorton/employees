@@ -23,6 +23,10 @@ public class Role {
     @Column(name = "seniority_level", nullable = false)
     private SeniorityLevel seniorityLevel;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Department department;
+
     public Role() {
     }
 
@@ -48,5 +52,13 @@ public class Role {
 
     public void setSeniorityLevel(SeniorityLevel seniorityLevel) {
         this.seniorityLevel = seniorityLevel;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 }

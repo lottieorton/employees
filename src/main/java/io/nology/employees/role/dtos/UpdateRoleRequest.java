@@ -1,5 +1,6 @@
 package io.nology.employees.role.dtos;
 
+import io.nology.employees.role.entities.Department;
 import io.nology.employees.role.entities.SeniorityLevel;
 import jakarta.validation.constraints.Pattern;
 
@@ -8,6 +9,8 @@ public class UpdateRoleRequest {
     private String name;
 
     private SeniorityLevel seniorityLevel;
+
+    private Department department;
 
     public UpdateRoleRequest() {
     }
@@ -26,5 +29,13 @@ public class UpdateRoleRequest {
 
     public void setSeniorityLevel(SeniorityLevel seniorityLevel) {
         this.seniorityLevel = seniorityLevel;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 }
