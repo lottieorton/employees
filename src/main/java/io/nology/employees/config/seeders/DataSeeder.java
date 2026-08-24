@@ -126,7 +126,6 @@ public class DataSeeder implements CommandLineRunner {
         employee2.setMiddleName(null);
         employee2.setPreferredName("Al");
         employee2.setPronouns(Pronouns.HE_HIM);
-
         employee2.setEmailAddress("alex.rivera@example.com");
         employee2.setPhoneNumber("+61498765432");
         employee2.setAddress(addresses.get(1));

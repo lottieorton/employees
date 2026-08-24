@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "employee",
+  "type": "object",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": { "type": "integer" },
+      "firstName": { "type": "string" },
+      "lastName": { "type": "string" },
+      "middleName": { "type": ["string", "null"] },
+      "preferredName": { "type": ["string", "null"] },
+      "pronouns": {
+        "type": ["string", "null"],
+        "enum": ["He/Him", "She/Her", "They/Them", "Other", null]
+      },
+      "emailAddress": { "type": "string" },
+      "phoneNumber": { "type": ["string", "null"] },
+      "startDate": { "type": "string" },
+      "lastDate": { "type": ["string", "null"] },
+      "isCurrentlyEmployed": { "type": "boolean" },
+      "workSetup": {
+        "type": "string",
+        "enum": ["ON_SITE", "HYBRID", "REMOTE"]
+      },
+      "employmentType": {
+        "type": "string",
+        "enum": [
+          "Full-Time Permanent",
+          "Part-Time Permanent",
+          "Contract",
+          "Casual",
+          "Intern"
+        ]
+      },
+      "address": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "formattedAddress": { "type": "string" }
+        },
+        "required": ["id", "formattedAddress"]
+      },
+      "role": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "seniorityLevel": { "type": "string" },
+          "department": { "type": "string" }
+        },
+        "required": ["id", "name", "seniorityLevel", "department"]
+      },
+      "manager": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": { "type": "integer" },
+          "fullName": { "type": "string" }
+        }
+      }
+    },
+    "required": [
+      "id",
+      "firstName",
+      "lastName",
+      "emailAddress",
+      "startDate",
+      "isCurrentlyEmployed",
+      "workSetup",
+      "employmentType",
+      "address",
+      "role"
+    ]
+  }
+}

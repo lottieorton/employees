@@ -46,7 +46,6 @@ public class EmployeeService {
         
         Employee createdEmployee = this.mapper.map(data, Employee.class);
         
-        
         if(data.getManagerId() != null) {
             Employee foundManager = resolveManager(data.getManagerId());
             createdEmployee.setManager(foundManager);
