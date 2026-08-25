@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,7 @@ import io.nology.employees.address.AddressService;
 import io.nology.employees.address.entities.Address;
 import io.nology.employees.common.exceptions.UnprocessableContentException;
 import io.nology.employees.employees.dtos.CreateEmployeeRequest;
+import io.nology.employees.employees.dtos.FindEmployeesQueryDto;
 import io.nology.employees.employees.dtos.UpdateEmployeeRequest;
 import io.nology.employees.employees.entities.Employee;
 import io.nology.employees.employees.entities.EmploymentType;
@@ -100,9 +102,44 @@ public class EmployeeServiceTest {
     }
 
     @Test
-    public void findAll_CallsFindAll() {
-        this.employeeService.findAll();
+    public void findAll_WhenNoQuery_CallsFindAll() {
+        this.employeeService.findAll(null);
         verify(this.repo).findAll();
+    }
+
+    @Test
+    public void findAll_WhenHasQuery_CallsFindAll() {
+        FindEmployeesQueryDto queryDto = new FindEmployeesQueryDto();
+        queryDto.setFirstName("sarah");
+
+        Employee employee1 = createEmployee(
+            null, 
+            "Sarah", 
+            "Jenkins", 
+            "Marie", 
+            "SJ", 
+            Pronouns.SHE_HER, 
+            null, 
+            "+61412345678", 
+            null, 
+            null, 
+            null, 
+            WorkSetup.ON_SITE, 
+            EmploymentType.FULL_TIME_PERMANENT, 
+            LocalDate.of(2021, 3, 15), 
+            LocalDate.of(2022, 3, 15), 
+            true
+        );
+
+        when(repo.findAll(any(org.springframework.data.jpa.domain.Specification.class))).thenReturn(List.of(employee1));
+        
+        // act
+        List<Employee> result = this.employeeService.findAll(queryDto);
+
+        // assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(this.repo).findAll(any(org.springframework.data.jpa.domain.Specification.class));
     }
 
     @Test

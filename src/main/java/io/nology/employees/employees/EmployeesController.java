@@ -3,6 +3,7 @@ package io.nology.employees.employees;
 import io.nology.employees.common.exceptions.NotFoundException;
 import io.nology.employees.employees.dtos.CreateEmployeeRequest;
 import io.nology.employees.employees.dtos.EmployeeResponse;
+import io.nology.employees.employees.dtos.FindEmployeesQueryDto;
 import io.nology.employees.employees.dtos.UpdateEmployeeRequest;
 import io.nology.employees.employees.entities.Employee;
 
@@ -18,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,8 +36,8 @@ public class EmployeesController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<EmployeeResponse>> findAllEmployees() {
-        List<Employee> allEmployees = this.employeeService.findAll();
+    public ResponseEntity<List<EmployeeResponse>> findAllEmployees(@ModelAttribute FindEmployeesQueryDto queryDto) {
+        List<Employee> allEmployees = this.employeeService.findAll(queryDto);
         return ResponseEntity.ok(EmployeeResponse.of(allEmployees));
     }
 

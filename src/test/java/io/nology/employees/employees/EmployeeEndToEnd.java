@@ -74,7 +74,7 @@ public class EmployeeEndToEnd {
         return role;
     }
 
-    private Employee createAndSaveEmployee(String firstName, String lastName, String middleName, Pronouns pronouns, String preferredName, String emailAddress, String phoneNumber, Address address, Role role, Employee manager, WorkSetup workSetup, EmploymentType employmentType, LocalDate startDate, LocalDate lastDate, Boolean isCurrentlyEmployed) {
+    private Employee createEmployee(String firstName, String lastName, String middleName, Pronouns pronouns, String preferredName, String emailAddress, String phoneNumber, Address address, Role role, Employee manager, WorkSetup workSetup, EmploymentType employmentType, LocalDate startDate, LocalDate lastDate, Boolean isCurrentlyEmployed) {
         Employee employee = new Employee();
         employee.setFirstName(firstName);
         employee.setLastName(lastName);
@@ -91,8 +91,53 @@ public class EmployeeEndToEnd {
         employee.setStartDate(startDate);
         employee.setLastDate(lastDate);
         employee.setIsCurrentlyEmployed(isCurrentlyEmployed);
-        this.employeeRepo.saveAndFlush(employee);
         return employee;
+    }
+
+    private Employee createSarah() {
+        Address address = createAndSaveAddress("1A", "Palm Tree Lane", "Sydney", "NSW", "2000");
+        Role role = createAndSaveRole("Senior Software Developer", SeniorityLevel.SENIOR, Department.ENGINEERING);
+        
+        return createEmployee(
+            "Sarah",
+            "Jenkins",
+            "Marie",
+            Pronouns.SHE_HER,
+            "SJ",
+            "sarah.jenkins@mycompany.com",
+            "+61412345678",
+            address,
+            role,
+            null,
+            WorkSetup.ON_SITE,
+            EmploymentType.FULL_TIME_PERMANENT,
+            LocalDate.of(2021, 3, 15),
+            null,
+            true
+        );
+    }
+
+    private Employee createAlex(Employee manager) {
+        Address address = createAndSaveAddress("2B", "Cockatoo Lane", "Brisbane", "QLD", "3000");
+        Role role = createAndSaveRole("Software Developer", SeniorityLevel.JUNIOR, Department.ENGINEERING);
+        
+        return createEmployee(
+            "Alex",
+            "Rivera",
+            null,
+            Pronouns.HE_HIM,
+            "Al",
+            "alex.rivera@example.com",
+            "+61498765432",
+            address,
+            role,
+            manager,
+            WorkSetup.HYBRID,
+            EmploymentType.FULL_TIME_PERMANENT,
+            LocalDate.of(2021, 8, 1),
+            null,
+            true
+        );
     }
 
     // getAll
@@ -109,44 +154,10 @@ public class EmployeeEndToEnd {
     @Test
     public void getAllEmployees_EmployeesInDB_ReturnsOKAndArrayOfEmployees() {
         // arrange
-        Address address1 = createAndSaveAddress("1A", "Palm Tree Lane", "Sydney", "NSW", "2000");
-        Role role1 = createAndSaveRole("Software Developer", SeniorityLevel.JUNIOR, Department.ENGINEERING);
-        Role role2 = createAndSaveRole("Senior Software Developer", SeniorityLevel.SENIOR, Department.ENGINEERING);
-        Employee employee1 = createAndSaveEmployee(
-            "Sarah",
-            "Jenkins",
-            "Marie",
-            Pronouns.SHE_HER,
-            "SJ",
-            "sarah.jenkins@example.com",
-            "+61412345678",
-            address1,
-            role2,
-            null,
-            WorkSetup.ON_SITE,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2021, 3, 15),
-            null,
-            true
-        );
-        createAndSaveEmployee(
-            "Alex",
-            "Rivera",
-            null,
-            Pronouns.HE_HIM,
-            "Al",
-            "alex.rivera@example.com",
-            "+61498765432",
-            address1,
-            role1,
-            employee1,
-            WorkSetup.HYBRID,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2021, 8, 1),
-            null,
-            true
-        );
-        
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        this.employeeRepo.saveAndFlush(employee2);
         //act
         given().when().get("/employees")
         // assert
@@ -156,30 +167,225 @@ public class EmployeeEndToEnd {
         .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
     }
 
+    // getAll - search queries
+
+    @Test
+    public void getAllEmployees_SearchByPartialFirstName_ReturnsMatchingEmployee() {
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        this.employeeRepo.saveAndFlush(employee2);
+        // act
+        given().param("search", "sara")
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("$", hasSize(1))
+        .body("firstName", hasItem("Sarah"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+    }
+
+    @Test
+    public void getAllEmployees_SearchByLastName_ReturnsMatchingEmployee() {
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        this.employeeRepo.saveAndFlush(employee2);
+        // act
+        given().param("search", "jenkins")
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("$", hasSize(1))
+        .body("firstName", hasItem("Sarah"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+    }
+
+    @Test
+    public void getAllEmployees_SearchByFullName_ReturnsMatchingEmployee() {
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        this.employeeRepo.saveAndFlush(employee2);
+        // act
+        given().param("search", "alex river")
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("$", hasSize(1))
+        .body("firstName", hasItem("Alex"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+    }
+
+    @Test
+    public void getAllEmployees_SearchByEmailAddress_ReturnsMatchingEmployee() {
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        this.employeeRepo.saveAndFlush(employee2);
+        // act
+        given().param("search", "alex.rivera@example.co")
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("$", hasSize(1))
+        .body("firstName", hasItem("Alex"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+    }
+    
+     @Test
+    public void getAllEmployees_SearchByRoleName_ReturnsMatchingEmployee() {
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        this.employeeRepo.saveAndFlush(employee2);
+        // act
+        given().param("search", "Senior Software Developer")
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("$", hasSize(1))
+        .body("firstName", hasItem("Sarah"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+    }
+    
+    @Test
+    public void getAllEmployees_SearchByWorkSetupSubString_ReturnsMatchingEmployee() {
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        this.employeeRepo.saveAndFlush(employee2);
+        // act
+        given().param("search", "site")
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("$", hasSize(1))
+        .body("firstName", hasItem("Sarah"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+    }
+    
+    @Test
+    public void getAllEmployees_NoMatches_ReturnsEmptyArray() {
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        this.employeeRepo.saveAndFlush(employee2);
+        // act
+        given().param("search", "no matches")
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("$", hasSize(0));
+    }
+
+    // getAll - specific query
+
+    @Test
+    public void getAllEmployees_FilterByFirstAndLatName_ReturnsMatchingEmployee() {
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        this.employeeRepo.saveAndFlush(employee2);
+        // act
+        given().param("firstName", "Sarah").param("lastName", "jenkin")
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("$", hasSize(1))
+        .body("firstName", hasItem("Sarah"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+    }
+    
+    @Test
+    public void getAllEmployees_FilterByWorkSetUp_ReturnsMatchingEmployee() {
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        this.employeeRepo.saveAndFlush(employee2);
+        // act
+        given().param("workSetup", "HYBRID")
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("$", hasSize(1))
+        .body("firstName", hasItem("Alex"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+    }
+    
+    @Test
+    public void getAllEmployees_FilterByRoleId_ReturnsMatchingEmployee() {
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        Long roleId = employee2.getRole().getId();
+        this.employeeRepo.saveAndFlush(employee2);
+        // act
+        given().param("roleId", roleId)
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("$", hasSize(1))
+        .body("firstName", hasItem("Alex"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+    }
+
+    @Test
+    public void getAllEmployees_FilterByRoleName_ReturnsMatchingEmployee() {
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        this.employeeRepo.saveAndFlush(employee2);
+        // act
+        given().param("roleName", "Senior Software")
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("$", hasSize(1))
+        .body("firstName", hasItem("Sarah"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+    }
+    
+    @Test
+    public void getAllEmployees_FilterByStartDateRange_ReturnsMatchingEmployee() {
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        this.employeeRepo.saveAndFlush(employee2);
+        // act
+        given().param("startDateFrom", "2021-01-01").param("startDateTo", "2021-04-01")
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("$", hasSize(1))
+        .body("firstName", hasItem("Sarah"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+    }
+    
+    @Test
+    public void getAllEmployees_FilterByCurrentlyEmployedStatus_ReturnsMatchingEmployee() {
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        this.employeeRepo.saveAndFlush(employee2);
+        // act
+        given().param("isCurrentlyEmployed", "true")
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("$", hasSize(2))
+        .body("firstName", hasItems("Sarah", "Alex"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+    }
+
+    
     // getById
 
     @Test
     public void getEmployeeById_ValidId_ReturnsOKAndEmployee() {
         // arrange
-        Address address1 = createAndSaveAddress("1A", "Palm Tree Lane", "Sydney", "NSW", "2000");
-        Role role1 = createAndSaveRole("Senior Software Developer", SeniorityLevel.SENIOR, Department.ENGINEERING);
-        Employee employee1 = createAndSaveEmployee(
-            "Sarah",
-            "Jenkins",
-            "Marie",
-            Pronouns.SHE_HER,
-            "SJ",
-            "sarah.jenkins@example.com",
-            "+61412345678",
-            address1,
-            role1,
-            null,
-            WorkSetup.ON_SITE,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2021, 3, 15),
-            null,
-            true
-        );
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
         Long employeeId = employee1.getId();
         //act
         given().when().get("/employees/" + employeeId)
@@ -215,28 +421,12 @@ public class EmployeeEndToEnd {
     @Test
     public void createEmployee_ValidDto_ReturnsOKAndCreatedEmployee() {
         // arrange
-        Address address1 = createAndSaveAddress("1A", "Palm Tree Lane", "Sydney", "NSW", "2000");
-        Long addressId = address1.getId();
-        Role role1 = createAndSaveRole("Software Developer", SeniorityLevel.JUNIOR, Department.ENGINEERING);
-        Long roleId = role1.getId();
-        createAndSaveRole("Senior Software Developer", SeniorityLevel.SENIOR, Department.ENGINEERING);
-        Employee manager = createAndSaveEmployee(
-            "Sarah",
-            "Jenkins",
-            "Marie",
-            Pronouns.SHE_HER,
-            "SJ",
-            "sarah.jenkins@example.com",
-            "+61412345678",
-            address1,
-            role1,
-            null,
-            WorkSetup.ON_SITE,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2021, 3, 15),
-            null,
-            true
-        );
+        Employee manager = createSarah();
+        Address address = createAndSaveAddress("1A", "Palm Tree Lane", "Sydney", "NSW", "2000");
+        Long addressId = address.getId();
+        Role role = createAndSaveRole("Software Developer", SeniorityLevel.JUNIOR, Department.ENGINEERING);
+        Long roleId = role.getId();
+        this.employeeRepo.saveAndFlush(manager);
         Long managerId = manager.getId();
 
         CreateEmployeeRequest data = new CreateEmployeeRequest();
@@ -436,23 +626,8 @@ public class EmployeeEndToEnd {
 
         createAndSaveRole("Senior Software Developer", SeniorityLevel.SENIOR, Department.ENGINEERING);
 
-        Employee manager = createAndSaveEmployee(
-            "Sarah",
-            "Jenkins",
-            "Marie",
-            Pronouns.SHE_HER,
-            "SJ",
-            "sarah.jenkins@mycompany.com",
-            "+61412345678",
-            address1,
-            role1,
-            null,
-            WorkSetup.ON_SITE,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2021, 3, 15),
-            null,
-            true
-        );
+        Employee manager = createSarah();
+        this.employeeRepo.saveAndFlush(manager);
         Long managerId = manager.getId();
 
         CreateEmployeeRequest data = new CreateEmployeeRequest();
@@ -489,46 +664,13 @@ public class EmployeeEndToEnd {
         Long addressId = address1.getId();
         Role role1 = createAndSaveRole("Software Developer", SeniorityLevel.JUNIOR, Department.ENGINEERING);
         Long roleId = role1.getId();
-        Role role2 = createAndSaveRole("Senior Software Developer", SeniorityLevel.SENIOR, Department.ENGINEERING);
 
-        Employee manager = createAndSaveEmployee(
-            "Sarah",
-            "Jenkins",
-            "Marie",
-            Pronouns.SHE_HER,
-            "SJ",
-            "sarah.jenkins@example.com",
-            "+61412345678",
-            address1,
-            role2,
-            null,
-            WorkSetup.ON_SITE,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2021, 3, 15),
-            null,
-            true
-        );
+        Employee manager = createSarah();
+        this.employeeRepo.saveAndFlush(manager);
         Long managerId = manager.getId();
-
-        Employee employee2 = createAndSaveEmployee(
-            "Alex",
-            "Rivera",
-            null,
-            Pronouns.HE_HIM,
-            "Al",
-            "alex.rivera@example.com",
-            "+61498765432",
-            address1,
-            role1,
-            manager,
-            WorkSetup.HYBRID,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2021, 8, 1),
-            null,
-            true
-        );
+        Employee employee2 = createAlex(manager);
+        this.employeeRepo.saveAndFlush(employee2);
         Long employeeId = employee2.getId();
-
 
         UpdateEmployeeRequest data = new UpdateEmployeeRequest();
         data.setFirstName("John");
@@ -592,45 +734,10 @@ public class EmployeeEndToEnd {
     @Test
     public void updateEmployeeById_InvalidDto_ReturnsBadRequest() {
         // arrange
-        Address address1 = createAndSaveAddress("1A", "Palm Tree Lane", "Sydney", "NSW", "2000");
-        Role role1 = createAndSaveRole("Software Developer", SeniorityLevel.JUNIOR, Department.ENGINEERING);
-        Role role2 = createAndSaveRole("Senior Software Developer", SeniorityLevel.SENIOR, Department.ENGINEERING);
-
-        Employee manager = createAndSaveEmployee(
-            "Sarah",
-            "Jenkins",
-            "Marie",
-            Pronouns.SHE_HER,
-            "SJ",
-            "sarah.jenkins@example.com",
-            "+61412345678",
-            address1,
-            role2,
-            null,
-            WorkSetup.ON_SITE,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2021, 3, 15),
-            null,
-            true
-        );
-
-        Employee employee2 = createAndSaveEmployee(
-            "Alex",
-            "Rivera",
-            null,
-            Pronouns.HE_HIM,
-            "Al",
-            "alex.rivera@example.com",
-            "+61498765432",
-            address1,
-            role1,
-            manager,
-            WorkSetup.HYBRID,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2021, 8, 1),
-            null,
-            true
-        );
+        Employee manager = createSarah();
+        this.employeeRepo.saveAndFlush(manager);
+        Employee employee2 = createAlex(manager);
+        this.employeeRepo.saveAndFlush(employee2);
         Long employeeId = employee2.getId();
 
         UpdateEmployeeRequest data = new UpdateEmployeeRequest();
@@ -646,45 +753,10 @@ public class EmployeeEndToEnd {
 
     @Test
     public void updateEmployeeById_NoBody_ReturnsBadRequest() {
-        Address address1 = createAndSaveAddress("1A", "Palm Tree Lane", "Sydney", "NSW", "2000");
-        Role role1 = createAndSaveRole("Software Developer", SeniorityLevel.JUNIOR, Department.ENGINEERING);
-        Role role2 = createAndSaveRole("Senior Software Developer", SeniorityLevel.SENIOR, Department.ENGINEERING);
-
-        Employee manager = createAndSaveEmployee(
-            "Sarah",
-            "Jenkins",
-            "Marie",
-            Pronouns.SHE_HER,
-            "SJ",
-            "sarah.jenkins@example.com",
-            "+61412345678",
-            address1,
-            role2,
-            null,
-            WorkSetup.ON_SITE,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2021, 3, 15),
-            null,
-            true
-        );
-
-        Employee employee2 = createAndSaveEmployee(
-            "Alex",
-            "Rivera",
-            null,
-            Pronouns.HE_HIM,
-            "Al",
-            "alex.rivera@example.com",
-            "+61498765432",
-            address1,
-            role1,
-            manager,
-            WorkSetup.HYBRID,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2021, 8, 1),
-            null,
-            true
-        );
+        Employee manager = createSarah();
+        this.employeeRepo.saveAndFlush(manager);
+        Employee employee2 = createAlex(manager);
+        this.employeeRepo.saveAndFlush(employee2);
         Long employeeId = employee2.getId();
         //act
         given().contentType(ContentType.JSON)
@@ -697,44 +769,10 @@ public class EmployeeEndToEnd {
 
     @Test
     public void updateEmployeeById_InvalidDates_ReturnsUnprocessableContent() {
-        Address address1 = createAndSaveAddress("1A", "Palm Tree Lane", "Sydney", "NSW", "2000");
-        Role role1 = createAndSaveRole("Software Developer", SeniorityLevel.JUNIOR, Department.ENGINEERING);
-        Role role2 = createAndSaveRole("Senior Software Developer", SeniorityLevel.SENIOR, Department.ENGINEERING);
-
-        Employee manager = createAndSaveEmployee(
-            "Sarah",
-            "Jenkins",
-            "Marie",
-            Pronouns.SHE_HER,
-            "SJ",
-            "sarah.jenkins@example.com",
-            "+61412345678",
-            address1,
-            role2,
-            null,
-            WorkSetup.ON_SITE,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2021, 3, 15),
-            null,
-            true
-        );
-        Employee employee2 = createAndSaveEmployee(
-            "Alex",
-            "Rivera",
-            null,
-            Pronouns.HE_HIM,
-            "Al",
-            "alex.rivera@example.com",
-            "+61498765432",
-            address1,
-            role1,
-            manager,
-            WorkSetup.HYBRID,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2021, 8, 1),
-            null,
-            true
-        );
+        Employee manager = createSarah();
+        this.employeeRepo.saveAndFlush(manager);
+        Employee employee2 = createAlex(manager);
+        this.employeeRepo.saveAndFlush(employee2);
         Long employeeId = employee2.getId();
 
         UpdateEmployeeRequest data = new UpdateEmployeeRequest();
@@ -750,28 +788,10 @@ public class EmployeeEndToEnd {
 
     @Test
     public void updateEmployeeById_RoleNotInDB_ReturnsUnprocessableContent() {
-        Address address1 = createAndSaveAddress("1A", "Palm Tree Lane", "Sydney", "NSW", "2000");
-        Role role1 = createAndSaveRole("Software Developer", SeniorityLevel.JUNIOR, Department.ENGINEERING);
-        Long roleId = role1.getId();
-
-        Employee employee2 = createAndSaveEmployee(
-            "Alex",
-            "Rivera",
-            null,
-            Pronouns.HE_HIM,
-            "Al",
-            "alex.rivera@example.com",
-            "+61498765432",
-            address1,
-            role1,
-            null,
-            WorkSetup.HYBRID,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2023, 8, 1),
-            null,
-            true
-        );
-        Long employeeId = employee2.getId();
+        Employee employee1 = createAlex(null);
+        Long roleId = employee1.getRole().getId();
+        this.employeeRepo.saveAndFlush(employee1);
+        Long employeeId = employee1.getId();
 
         UpdateEmployeeRequest data = new UpdateEmployeeRequest();
         data.setRoleId(roleId + 1);        
@@ -787,28 +807,10 @@ public class EmployeeEndToEnd {
 
     @Test
     public void updateEmployeeById_AddressNotInDB_ReturnsUnprocessableContent() {
-        Address address1 = createAndSaveAddress("1A", "Palm Tree Lane", "Sydney", "NSW", "2000");
-        Long addressId = address1.getId();
-        Role role1 = createAndSaveRole("Software Developer", SeniorityLevel.JUNIOR, Department.ENGINEERING);
-
-        Employee employee2 = createAndSaveEmployee(
-            "Alex",
-            "Rivera",
-            null,
-            Pronouns.HE_HIM,
-            "Al",
-            "alex.rivera@example.com",
-            "+61498765432",
-            address1,
-            role1,
-            null,
-            WorkSetup.HYBRID,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2023, 8, 1),
-            null,
-            true
-        );
-        Long employeeId = employee2.getId();
+        Employee employee1 = createAlex(null);
+        Long addressId = employee1.getAddress().getId();
+        this.employeeRepo.saveAndFlush(employee1);
+        Long employeeId = employee1.getId();
 
         UpdateEmployeeRequest data = new UpdateEmployeeRequest();
         data.setAddressId(addressId + 1);        
@@ -824,27 +826,9 @@ public class EmployeeEndToEnd {
 
     @Test
     public void updateEmployeeById_ManagerNotInDB_ReturnsUnprocessableContent() {
-        Address address1 = createAndSaveAddress("1A", "Palm Tree Lane", "Sydney", "NSW", "2000");
-        Role role1 = createAndSaveRole("Software Developer", SeniorityLevel.JUNIOR, Department.ENGINEERING);
-
-        Employee employee2 = createAndSaveEmployee(
-            "Alex",
-            "Rivera",
-            null,
-            Pronouns.HE_HIM,
-            "Al",
-            "alex.rivera@example.com",
-            "+61498765432",
-            address1,
-            role1,
-            null,
-            WorkSetup.HYBRID,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2023, 8, 1),
-            null,
-            true
-        );
-        Long employeeId = employee2.getId();
+        Employee employee1 = createAlex(null);
+        this.employeeRepo.saveAndFlush(employee1);
+        Long employeeId = employee1.getId();
 
         UpdateEmployeeRequest data = new UpdateEmployeeRequest();
         data.setManagerId(employeeId + 1);        
@@ -860,45 +844,14 @@ public class EmployeeEndToEnd {
 
     @Test
     public void updateEmployeeById_WhenEmailAddressAlreadyInUse_ReturnsBadRequest() {
-        Address address1 = createAndSaveAddress("1A", "Palm Tree Lane", "Sydney", "NSW", "2000");
-        Role role1 = createAndSaveRole("Software Developer", SeniorityLevel.JUNIOR, Department.ENGINEERING);
         createAndSaveRole("Senior Software Developer", SeniorityLevel.SENIOR, Department.ENGINEERING);
+        Employee employee1 = createAlex(null);
+        employee1.setEmailAddress("sarah.jenkins@example.com");
+        this.employeeRepo.saveAndFlush(employee1);
 
-        createAndSaveEmployee(
-            "Alex",
-            "Rivera",
-            null,
-            Pronouns.HE_HIM,
-            "Al",
-            "sarah.jenkins@example.com",
-            "+61498765432",
-            address1,
-            role1,
-            null,
-            WorkSetup.HYBRID,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2023, 8, 1),
-            null,
-            true
-        );
-
-        Employee employee2 = createAndSaveEmployee(
-            "Sarah",
-            "Jenkins",
-            "Marie",
-            Pronouns.SHE_HER,
-            "SJ",
-            "susan.jenkins@example.com",
-            "+61412345678",
-            address1,
-            role1,
-            null,
-            WorkSetup.ON_SITE,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2021, 3, 15),
-            null,
-            true
-        );
+        Employee employee2 = createSarah();
+        employee2.setEmailAddress("susan.jenkins@example.com");
+        this.employeeRepo.saveAndFlush(employee2);
         Long employeeId = employee2.getId();
 
         UpdateEmployeeRequest data = new UpdateEmployeeRequest();
@@ -915,27 +868,9 @@ public class EmployeeEndToEnd {
     @Test
     public void deleteEmployeeById_ValidId_ReturnNoContent() {
         // arrange
-        Address address1 = createAndSaveAddress("1A", "Palm Tree Lane", "Sydney", "NSW", "2000");
-        Role role1 = createAndSaveRole("Software Developer", SeniorityLevel.JUNIOR, Department.ENGINEERING);
-        Employee employee2 = createAndSaveEmployee(
-            "Alex",
-            "Rivera",
-            null,
-            Pronouns.HE_HIM,
-            "Al",
-            "alex.rivera@example.com",
-            "+61498765432",
-            address1,
-            role1,
-            null,
-            WorkSetup.HYBRID,
-            EmploymentType.FULL_TIME_PERMANENT,
-            LocalDate.of(2023, 8, 1),
-            null,
-            true
-        );
-        Long employeeId = employee2.getId();
-        
+        Employee employee1 = createAlex(null);
+        this.employeeRepo.saveAndFlush(employee1);
+        Long employeeId = employee1.getId();
         //act
         given().when().delete("/employees/" + employeeId)
         // assert
@@ -962,4 +897,21 @@ public class EmployeeEndToEnd {
         .body("error", equalTo("Bad Request"))
         .body(matchesJsonSchemaInClasspath("schemas/api-error-schema.json"));
     }
+
+    @Test
+    public void deleteEmployeeById_EmployeeIsManagerToOtherEmployees_ReturnsBadRequest() {
+        // arrange
+        Employee manager = createSarah();
+        this.employeeRepo.saveAndFlush(manager);
+        Long managerId = manager.getId();
+        Employee employee2 = createAlex(manager);
+        this.employeeRepo.saveAndFlush(employee2);
+        //act
+        given().when().delete("/employees/" + managerId)
+        // assert
+        .then().statusCode(HttpStatus.BAD_REQUEST.value())
+        .body("error", equalTo("Bad Request"))
+        .body(matchesJsonSchemaInClasspath("schemas/api-error-schema.json"));
+    }    
+
 }

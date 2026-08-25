@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import io.nology.employees.address.AddressService;
 import io.nology.employees.address.entities.Address;
 import io.nology.employees.common.exceptions.UnprocessableContentException;
 import io.nology.employees.employees.dtos.CreateEmployeeRequest;
+import io.nology.employees.employees.dtos.FindEmployeesQueryDto;
 import io.nology.employees.employees.dtos.UpdateEmployeeRequest;
 import io.nology.employees.employees.entities.Employee;
 import io.nology.employees.role.RoleService;
@@ -31,8 +33,12 @@ public class EmployeeService {
         this.roleService = roleService;
     }
 
-    public List<Employee> findAll() {
-        return this.repo.findAll();
+    public List<Employee> findAll(FindEmployeesQueryDto queryDto) {
+        if(queryDto == null) {
+            return this.repo.findAll();
+        }
+        Specification<Employee> spec = EmployeeSpecification.withDynamicQuery(queryDto);
+        return this.repo.findAll(spec);
     }
 
     public Optional<Employee> findById(Long id) {
