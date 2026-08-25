@@ -47,7 +47,7 @@ export default function RadioGroupField({
           <label
             key={opt.value}
             htmlFor={`${id}-${opt.value}`}
-            className="flex items-center gap-2 text-sm text-zinc-700 cursor-pointer"
+            className="flex items-center gap-2 text-sm text-zinc-700 cursor-pointer 3xl:text-xl"
           >
             <input
               type="radio"

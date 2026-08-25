@@ -33,7 +33,7 @@ export default function InputField({
         id={id}
         type={type}
         disabled={disabled}
-        className="bg-white border border-zinc-200 p-2 rounded-md text-zinc-600 text-sm focus:outline-indigo-600 disabled:bg-zinc-100 disabled:cursor-not-allowed"
+        className="bg-white border border-zinc-200 p-2 rounded-md text-zinc-600 text-sm focus:outline-indigo-600 disabled:bg-zinc-100 disabled:cursor-not-allowed 3xl:text-xl"
       />
     </FieldWrapper>
   );

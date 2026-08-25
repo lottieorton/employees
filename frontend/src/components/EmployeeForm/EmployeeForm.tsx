@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import Button from "../Button/Button";
 import CheckboxField from "../fields/CheckboxField/CheckboxField";
 import InputField from "../fields/InputField/InputField";
@@ -18,23 +19,28 @@ export default function EmployeeForm() {
   };
 
   return (
-    <>
-      <button className="flex justify-start text-indigo-600 font-medium text-base hover:underline transition-colors cursor-pointer hover:text-indigo-800">
+    <section className="w-full flex flex-col gap-5">
+      <Link
+        to="/"
+        className="flex justify-start text-indigo-600 font-medium text-base hover:underline transition-colors cursor-pointer hover:text-indigo-800 3xl:text-2xl"
+      >
         ← Back to Team
-      </button>
+      </Link>
       <div className="flex flex-col align-middle gap-1">
-        <h1 className="text-2xl text-zinc-950 font-bold text-center">{`${employee.firstName} ${employee.preferredName && `(${employee.preferredName})`} ${employee.lastName}`}</h1>
-        <p className="text-sm text-zinc-600 text-center">{employee.jobTitle}</p>
+        <h1 className="text-2xl text-zinc-950 font-bold text-center 3xl:text-4xl">{`${employee.firstName} ${employee.preferredName && `(${employee.preferredName})`} ${employee.lastName}`}</h1>
+        <p className="text-sm text-zinc-600 text-center 3xl:text-xl">
+          {employee.jobTitle}
+        </p>
       </div>
 
       <form className="grid grid-cols-2 gap-3 w-full ">
-        <h3 className="text-base text-zinc-950 font-semibold col-span-full pt-6 pb-2">
+        <h3 className="text-base text-zinc-950 font-semibold col-span-full pt-6 pb-2 3xl:text-2xl">
           Personal Information
         </h3>
         <SelectField
           id="pronouns"
           label="Pronouns"
-          colSpan="col-span-2 md:col-span-1"
+          colSpan="col-span-2"
           options={[
             { label: "he/him", value: "he/him" },
             { label: "she/her", value: "she/her" },
@@ -62,7 +68,7 @@ export default function EmployeeForm() {
           label="Preferred Name"
           colSpan="col-span-1"
         />
-        <h3 className="text-base text-zinc-950 font-semibold col-span-full pt-6 pb-2">
+        <h3 className="text-base text-zinc-950 font-semibold col-span-full pt-6 pb-2 3xl:text-2xl">
           Contact Information
         </h3>
         <InputField
@@ -73,26 +79,84 @@ export default function EmployeeForm() {
         />
         <InputField id="phoneNumber" label="Phone Number" type="tel" required />
         <InputField
-          id="address"
-          label="Residential Address"
-          colSpan="col-span-2"
+          id="unitAddress"
+          label="Unit Address"
+          colSpan="col-span-1"
+          required
+        />
+        <InputField
+          id="streetAddress"
+          label="Street Address"
+          colSpan="col-span-1"
+          required
+        />
+        <InputField
+          id="addressLine2"
+          label="Address Line 2"
+          colSpan="col-span-1"
+        />
+        <InputField id="city" label="City" colSpan="col-span-1" required />
+        <InputField
+          id="stateProvinceRegion"
+          label="State/Province/Region"
+          colSpan="col-span-1"
+        />
+        <InputField
+          id="postalCode"
+          label="Postal Code"
+          colSpan="col-span-1"
+          required
+        />
+        <InputField
+          id="country"
+          label="Country"
+          colSpan="col-span-1"
           required
         />
 
-        <h3 className="text-base text-zinc-950 font-semibold col-span-full pt-6 pb-2">
+        <h3 className="text-base text-zinc-950 font-semibold col-span-full pt-6 pb-2 3xl:text-2xl">
           Employement Information
         </h3>
-        <InputField
+        <SelectField
           id="role"
           label="Role"
           colSpan="col-span-2 md:col-span-1"
+          options={[
+            { label: "Software Developer", value: "Software Developer" },
+            { label: "QA / Test Engineer", value: "QA / Test Engineer" },
+            { label: "DevOps Engineer", value: "DevOps Engineer" },
+            { label: "Engineering Manager", value: "Engineering Manager" },
+          ]}
           required
         />
-        <InputField
+        <SelectField
+          id="seniorityLevel"
+          label="Seniority"
+          colSpan="col-span-2 md:col-span-1"
+          options={[
+            { label: "Junior", value: "Junior" },
+            { label: "Mid", value: "Mid" },
+            { label: "Senior", value: "Senior" },
+            { label: "Lead", value: "Lead" },
+          ]}
+          required
+        />
+        <SelectField
           id="department"
           label="Department"
           colSpan="col-span-2 md:col-span-1"
+          options={[
+            { label: "Engineering", value: "Engineering" },
+            { label: "Quality_Assurance", value: "Quality_Assurance" },
+            { label: "DESIGN", value: "DESIGN" },
+            { label: "PRODUCT", value: "PRODUCT" },
+          ]}
           required
+        />
+        <InputField
+          id="manager"
+          label="Manager"
+          colSpan="col-span-2 md:col-span-1"
         />
         <RadioGroupField
           id="workSetup"
@@ -121,10 +185,11 @@ export default function EmployeeForm() {
           label="Start Date"
           colSpan="col-span-1"
           type="date"
+          required
         />
         <InputField
-          id="endDate"
-          label="End Date"
+          id="lastDate"
+          label="Last Date"
           colSpan="col-span-1"
           type="date"
         />
@@ -142,6 +207,6 @@ export default function EmployeeForm() {
           </Button>
         </div>
       </form>
-    </>
+    </section>
   );
 }

@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 interface EmployeeProps {
   employee: {
     firstName: string;
@@ -13,7 +15,7 @@ interface EmployeeProps {
 
 export default function EmployeeCard({ employee, bgColor }: EmployeeProps) {
   const btnBase =
-    "font-medium text-base hover:underline transition-colors cursor-pointer";
+    "font-medium text-base hover:underline transition-colors cursor-pointer 3xl:text-2xl";
 
   return (
     <article
@@ -21,19 +23,26 @@ export default function EmployeeCard({ employee, bgColor }: EmployeeProps) {
     >
       <div className="flex flex-col gap-2">
         <div className="flex flex-col">
-          <h3 className="text-base text-zinc-950 font-semibold">{`${employee.firstName} ${employee.lastName}`}</h3>
-          <p className="text-sm text-zinc-500">{employee.jobTitle}</p>
+          <h3 className="text-base text-zinc-950 font-semibold 3xl:text-2xl">{`${employee.firstName} ${employee.lastName}`}</h3>
+          <p className="text-sm text-zinc-500 3xl:text-xl">
+            {employee.jobTitle}
+          </p>
         </div>
-        <p className="text-base text-zinc-700">{employee.emailAddress}</p>
+        <p className="text-base text-zinc-700 3xl:text-2xl">
+          {employee.emailAddress}
+        </p>
       </div>
       <div className="flex flex-col justify-between">
-        <p className="text-sm text-zinc-500">Joined {employee.startDate}</p>
+        <p className="text-sm text-zinc-500 3xl:text-xl text-right">
+          Joined {employee.startDate}
+        </p>
         <div className="flex justify-end gap-2">
-          <button
+          <Link
+            to="/1"
             className={`text-indigo-600 ${btnBase} hover:text-indigo-800`}
           >
             View
-          </button>
+          </Link>
           <button className={`text-red-500 ${btnBase} hover:text-rose-600`}>
             Delete
           </button>

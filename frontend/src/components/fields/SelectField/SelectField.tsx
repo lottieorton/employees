@@ -24,12 +24,12 @@ export default function SelectField({
 }: SelectFieldProps) {
   return (
     <div className={`flex flex-col gap-1 ${colSpan}`}>
-      <label htmlFor={id} className="text-sm text-zinc-500">
+      <label htmlFor={id} className="text-sm text-zinc-500 3xl:text-xl">
         {label} {required && <span className="text-rose-500">*</span>}
       </label>
       <select
         id={id}
-        className="bg-white border border-zinc-200 p-2 rounded-md text-zinc-600 text-sm focus:outline-indigo-600 cursor-pointer"
+        className="bg-white border border-zinc-200 p-2 rounded-md text-zinc-600 text-sm focus:outline-indigo-600 cursor-pointer 3xl:text-xl"
       >
         <option value="">Select {label.toLowerCase()}</option>
         {options.map((opt) => (
@@ -38,7 +38,9 @@ export default function SelectField({
           </option>
         ))}
       </select>
-      {error && <span className="text-xs text-rose-500">{error}</span>}
+      {error && (
+        <span className="text-xs text-rose-500 3xl:text-lg">{error}</span>
+      )}
     </div>
   );
 }

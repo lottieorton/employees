@@ -23,7 +23,7 @@ export default function CheckboxField({
     <div className={`flex flex-col gap-1 ${colSpan}`}>
       <label
         htmlFor={id}
-        className="flex items-center gap-2 text-sm text-zinc-700 cursor-pointer select-none"
+        className="flex items-center gap-2 text-sm text-zinc-700 cursor-pointer select-none 3xl:text-xl"
       >
         <input
           id={id}
@@ -35,7 +35,9 @@ export default function CheckboxField({
         />
         {label}
       </label>
-      {error && <span className="text-xs text-rose-500">{error}</span>}
+      {error && (
+        <span className="text-xs text-rose-500 3xl:text-lg">{error}</span>
+      )}
     </div>
   );
 }
