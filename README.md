@@ -1,4 +1,5 @@
 # Full-Stack Employee Application
+[![Java CI with Maven](https://github.com/lottieorton/employees/actions/workflows/maven.yml/badge.svg)](https://github.com/lottieorton/employees/actions/workflows/maven.yml)
 
 **`IN PROGRESS`**
 
