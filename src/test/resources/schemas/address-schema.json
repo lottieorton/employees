@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "unitNumber": { "type": "string" },
+    "streetAddress": { "type": "string" },
+    "addressLine2": { "type": "string" },
+    "city": { "type": "string" },
+    "stateProvinceRegion": { "type": "string" },
+    "postalCode": { "type": "string" },
+    "country": { "type": "string" }
+  },
+  "required": [
+    "id",
+    "unitNumber",
+    "streetAddress",
+    "addressLine2",
+    "city",
+    "stateProvinceRegion",
+    "postalCode",
+    "country"
+  ],
+  "additionalProperties": false
+}
