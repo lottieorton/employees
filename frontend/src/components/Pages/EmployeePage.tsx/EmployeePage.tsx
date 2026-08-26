@@ -28,7 +28,7 @@ export default function EmployeePage() {
           ← Back to Team
         </Link>
         <button
-          onClick={() => setIsEditing((prev) => !prev)}
+          onClick={(): void => setIsEditing((prev) => !prev)}
           className="flex justify-start text-indigo-600 font-medium text-base hover:underline transition-colors cursor-pointer hover:text-indigo-800 3xl:text-2xl"
         >
           {isEditing ? "View mode" : "Edit"}

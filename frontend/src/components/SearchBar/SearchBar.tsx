@@ -1,4 +1,24 @@
-export default function SearchBar() {
+import { useEffect, useState } from "react";
+
+interface SearchBarProps {
+  handleSearch: (s: string) => void;
+}
+
+export default function SearchBar({ handleSearch }: SearchBarProps) {
+  const [input, setInput] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  };
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      handleSearch(input);
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [input]);
+
   const dropdownOptions = [
     { id: 0, value: "", text: "Search by..." },
     { id: 1, value: "name", text: "Name" },
@@ -8,13 +28,18 @@ export default function SearchBar() {
   ];
 
   return (
-    <form className="flex gap-3 w-full justify-between">
+    <form
+      className="flex gap-3 w-full justify-between"
+      onSubmit={(e) => e.preventDefault()}
+    >
       <div className="bg-white border border-solid border-zinc-200 py-3 px-4 rounded-md flex flex-1 gap-1 items-center focus-within:border-indigo-600 focus-within:ring-1 focus-within:ring-indigo-600">
         <i className="fa-solid fa-magnifying-glass text-zinc-400 text-sm 3xl:text-xl"></i>
         <input
           type="text"
           className="text-zinc-600 flex-1 outline-none text-sm placeholder:text-zinc-400 bg-transparent 3xl:text-xl"
           placeholder="Search by name, role, etc"
+          onChange={handleChange}
+          value={input}
         />
       </div>
       <select className="bg-white border border-solid border-zinc-200 py-3 px-4 rounded-md text-zinc-600 text-sm focus:outline-indigo-600 cursor-pointer 3xl:text-xl">

@@ -1,15 +1,8 @@
 import { Link } from "react-router-dom";
+import type { Employee } from "../../interfaces/Employee";
 
 interface EmployeeProps {
-  employee: {
-    firstName: string;
-    lastName: string;
-    emailAddress: string;
-    jobTitle: string;
-    department: string;
-    startDate: string;
-    seniority: string;
-  };
+  employee: Employee;
   bgColor: string;
 }
 
@@ -25,7 +18,7 @@ export default function EmployeeCard({ employee, bgColor }: EmployeeProps) {
         <div className="flex flex-col">
           <h3 className="text-base text-zinc-950 font-semibold 3xl:text-2xl">{`${employee.firstName} ${employee.lastName}`}</h3>
           <p className="text-sm text-zinc-500 3xl:text-xl">
-            {employee.jobTitle}
+            {employee.role?.name}
           </p>
         </div>
         <p className="text-base text-zinc-700 3xl:text-2xl">
@@ -38,7 +31,7 @@ export default function EmployeeCard({ employee, bgColor }: EmployeeProps) {
         </p>
         <div className="flex justify-end gap-2">
           <Link
-            to="/1"
+            to={`/${employee.id}`}
             className={`text-indigo-600 ${btnBase} hover:text-indigo-800`}
           >
             View
