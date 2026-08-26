@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import Button from "../Button/Button";
 import CheckboxField from "../fields/CheckboxField/CheckboxField";
 import InputField from "../fields/InputField/InputField";
@@ -6,33 +5,8 @@ import RadioGroupField from "../fields/RadioGroupField/RadioGroupField";
 import SelectField from "../fields/SelectField/SelectField";
 
 export default function EmployeeForm() {
-  const employee = {
-    id: "1",
-    firstName: "Charlotte",
-    preferredName: "Lottie",
-    lastName: "Orton",
-    emailAddress: "sarah.chen@mycompany.com",
-    jobTitle: "Software Engineer",
-    department: "Engineering",
-    startDate: "2021-03-15",
-    seniority: "Senior",
-  };
-
   return (
     <section className="w-full flex flex-col gap-5">
-      <Link
-        to="/"
-        className="flex justify-start text-indigo-600 font-medium text-base hover:underline transition-colors cursor-pointer hover:text-indigo-800 3xl:text-2xl"
-      >
-        ← Back to Team
-      </Link>
-      <div className="flex flex-col align-middle gap-1">
-        <h1 className="text-2xl text-zinc-950 font-bold text-center 3xl:text-4xl">{`${employee.firstName} ${employee.preferredName && `(${employee.preferredName})`} ${employee.lastName}`}</h1>
-        <p className="text-sm text-zinc-600 text-center 3xl:text-xl">
-          {employee.jobTitle}
-        </p>
-      </div>
-
       <form className="grid grid-cols-2 gap-3 w-full ">
         <h3 className="text-base text-zinc-950 font-semibold col-span-full pt-6 pb-2 3xl:text-2xl">
           Personal Information

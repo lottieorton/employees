@@ -1,7 +1,8 @@
 import "./App.css";
-import EmployeeForm from "./components/EmployeeForm/EmployeeForm";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Homepage from "./components/Pages/Homepage/Homepage";
+import EmployeePage from "./components/Pages/EmployeePage.tsx/EmployeePage";
+import CreateEmployeePage from "./components/Pages/CreateEmployeePage/CreateEmployeePage";
 
 function App() {
   return (
@@ -10,7 +11,8 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Homepage />} />
-            <Route path="/1" element={<EmployeeForm />} />
+            <Route path="/create" element={<CreateEmployeePage />} />
+            <Route path="/1" element={<EmployeePage />} />
           </Routes>
         </BrowserRouter>
       </section>

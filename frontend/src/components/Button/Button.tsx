@@ -4,12 +4,14 @@ interface ButtonProps {
   children: ReactNode;
   type?: "primary" | "danger";
   size: "sm" | "lg";
+  handleClick?: () => void;
 }
 
 export default function Button({
   children,
   size = "sm",
   type = "primary",
+  handleClick,
 }: ButtonProps) {
   const baseStyles =
     "rounded-md text-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors cursor-pointer 3xl:text-xl";
@@ -25,7 +27,10 @@ export default function Button({
   };
 
   return (
-    <button className={`${baseStyles} ${typeStyles[type]} ${sizeStyles[size]}`}>
+    <button
+      className={`${baseStyles} ${typeStyles[type]} ${sizeStyles[size]}`}
+      onClick={handleClick}
+    >
       {children}
     </button>
   );
