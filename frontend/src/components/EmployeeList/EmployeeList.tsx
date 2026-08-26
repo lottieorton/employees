@@ -1,6 +1,8 @@
 import EmployeeCard from "../EmployeeCard/EmployeeCard";
 import { useEmployees } from "../../hooks/useEmployees";
 import type { SearchQuery } from "../../interfaces/SearchQuery";
+import ErrorBanner from "../ErrorBanner/ErrorBanner";
+import LoadingBanner from "../LoadingBanner/LoadingBanner";
 
 interface EmployeeListProps {
   searchTerm: string;
@@ -17,6 +19,18 @@ export default function EmployeeList({ searchTerm }: EmployeeListProps) {
     isLoading,
     isError,
   } = useEmployees(searchQuery);
+
+  if (isError) {
+    return (
+      <ErrorBanner>
+        Failed to load employees. Please try refreshing the page.
+      </ErrorBanner>
+    );
+  }
+
+  if (isLoading) {
+    return <LoadingBanner>Loading employees...</LoadingBanner>;
+  }
 
   return (
     <section className="">

@@ -1,5 +1,6 @@
 import React from "react";
 import type { FieldWrapperProps } from "../FieldWrapper/FieldWrapper";
+import type { UseFormRegisterReturn } from "react-hook-form";
 
 export interface SelectOption {
   label: string;
@@ -12,6 +13,7 @@ interface SelectFieldProps
     Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "id"> {
   id: string;
   options: SelectOption[];
+  registration?: UseFormRegisterReturn;
 }
 
 export default function SelectField({
@@ -21,6 +23,7 @@ export default function SelectField({
   required = false,
   error,
   options,
+  registration,
 }: SelectFieldProps) {
   return (
     <div className={`flex flex-col gap-1 ${colSpan}`}>
@@ -29,6 +32,7 @@ export default function SelectField({
       </label>
       <select
         id={id}
+        {...registration}
         className="bg-white border border-zinc-200 p-2 rounded-md text-zinc-600 text-sm focus:outline-indigo-600 cursor-pointer 3xl:text-xl"
       >
         <option value="">Select {label.toLowerCase()}</option>

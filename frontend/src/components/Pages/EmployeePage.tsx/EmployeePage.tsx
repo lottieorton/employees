@@ -1,10 +1,25 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import EmployeeForm from "../../EmployeeForm/EmployeeForm";
 import EmployeeDetails from "../../EmployeeDetails/EmployeeDetails";
 
 export default function EmployeePage() {
   const [isEditing, setIsEditing] = useState(false);
+  const navigate = useNavigate();
+
+  const toggleEditing = () => {
+    setIsEditing((prev) => !prev);
+  };
+
+  const handleSubmit = () => {
+    // update user
+    toggleEditing();
+  };
+
+  const handleCancelClick = () => {
+    // delete user
+    navigate("/");
+  };
 
   const employee = {
     id: "1",
@@ -28,7 +43,7 @@ export default function EmployeePage() {
           ← Back to Team
         </Link>
         <button
-          onClick={(): void => setIsEditing((prev) => !prev)}
+          onClick={(): void => toggleEditing()}
           className="flex justify-start text-indigo-600 font-medium text-base hover:underline transition-colors cursor-pointer hover:text-indigo-800 3xl:text-2xl"
         >
           {isEditing ? "View mode" : "Edit"}
@@ -40,7 +55,16 @@ export default function EmployeePage() {
           {employee.roleName}
         </p>
       </div>
-      {isEditing ? <EmployeeForm /> : <EmployeeDetails />}
+      {isEditing ? (
+        <EmployeeForm
+          handlePageSubmit={handleSubmit}
+          handleWarningClick={handleCancelClick}
+          submitBtnText="Save Changes"
+          warningBtnText="Delete Employee"
+        />
+      ) : (
+        <EmployeeDetails />
+      )}
     </section>
   );
 }

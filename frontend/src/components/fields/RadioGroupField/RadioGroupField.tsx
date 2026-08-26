@@ -3,6 +3,7 @@ import {
   FieldWrapper,
   type FieldWrapperProps,
 } from "../FieldWrapper/FieldWrapper";
+import type { UseFormRegisterReturn } from "react-hook-form";
 
 interface RadioOption {
   label: string;
@@ -16,6 +17,7 @@ interface RadioGroupFieldProps extends Omit<FieldWrapperProps, "children"> {
   direction?: "row" | "col";
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  registration?: UseFormRegisterReturn;
 }
 
 export default function RadioGroupField({
@@ -28,6 +30,7 @@ export default function RadioGroupField({
   required,
   error,
   onChange,
+  registration,
 }: RadioGroupFieldProps) {
   const layoutClass =
     direction === "col"
@@ -55,6 +58,7 @@ export default function RadioGroupField({
               name={name}
               value={opt.value}
               onChange={onChange}
+              {...registration}
               className="accent-indigo-600 h-4 w-4 cursor-pointer"
             />
             {opt.label}
