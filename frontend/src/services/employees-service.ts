@@ -16,3 +16,14 @@ export const getAllEmployees = async (
   }
   return resposne.json();
 };
+
+export const getEmployeeById = async (id?: string): Promise<Employee> => {
+  if (!id) {
+    throw new FetchError("Invalid employee ID");
+  }
+  const response = await fetch(`${API_URL}/employees/${id}`);
+  if (!response.ok) {
+    throw new FetchError("Failed to fetch employee");
+  }
+  return response.json();
+};
