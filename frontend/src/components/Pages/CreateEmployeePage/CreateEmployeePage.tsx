@@ -9,8 +9,6 @@ export default function CreateEmployeePage() {
   const { mutate: createEmployee, isError, error } = useCreateEmployee();
 
   const handleSubmit = (formData: FormValues) => {
-    console.log("formData in create " + formData);
-    console.log(formData);
     createEmployee(formData);
     navigate("/");
   };
@@ -37,6 +35,7 @@ export default function CreateEmployeePage() {
         handleWarningClick={handleCancelClick}
         submitBtnText="Create Employee"
         warningBtnText="Cancel"
+        hasEmail={false}
       />
     </section>
   );

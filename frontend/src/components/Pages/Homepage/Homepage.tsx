@@ -5,7 +5,6 @@ import SearchBar from "../../SearchBar/SearchBar";
 
 export default function Homepage() {
   const [searchTerm, setSearchTerm] = useState("");
-  console.log(searchTerm);
   return (
     <section className="w-full flex flex-col gap-5 3xl:gap-7">
       <Header />

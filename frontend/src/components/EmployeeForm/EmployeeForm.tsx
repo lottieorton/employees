@@ -10,12 +10,14 @@ import { useEffect, useState } from "react";
 import { getEmployeeFormEnums } from "../../services/employees-service";
 import { useEmployees } from "../../hooks/useEmployees";
 import { useRoleFilters } from "../../hooks/useRoleFilters";
+import { createAddress } from "../../services/addresses-service";
 
 interface EmployeeFormProps {
   handlePageSubmit: (formData: FormValues) => void;
   handleWarningClick: () => void;
   submitBtnText: string;
   warningBtnText: string;
+  hasEmail?: boolean;
 }
 
 export interface FormOption {
@@ -34,6 +36,7 @@ export default function EmployeeForm({
   handleWarningClick,
   submitBtnText,
   warningBtnText,
+  hasEmail = true,
 }: EmployeeFormProps) {
   const [formOptions, setFormOptions] = useState<FormOptions>({
     pronouns: [],
@@ -64,8 +67,14 @@ export default function EmployeeForm({
   }, []);
 
   const onSubmit: SubmitHandler<FormValues> = (d): void => {
-    const formData = { ...d, roleId: getSelectedRoleId(d), addressId: 1 };
-    handlePageSubmit(formData);
+    createAddress(d).then((a) => {
+      const formData = {
+        ...d,
+        roleId: getSelectedRoleId(d),
+        addressId: a.id,
+      };
+      handlePageSubmit(formData);
+    });
   };
 
   const employeeList = employees.map((e) => {
@@ -126,14 +135,16 @@ export default function EmployeeForm({
         <h3 className="text-base text-zinc-950 font-semibold col-span-full pt-6 pb-2 3xl:text-2xl">
           Contact Information
         </h3>
-        <InputField
-          id="emailAddress"
-          label="Email Address"
-          type="email"
-          required
-          registration={register("emailAddress")}
-          error={errors.emailAddress?.message}
-        />
+        {hasEmail && (
+          <InputField
+            id="emailAddress"
+            label="Email Address"
+            type="email"
+            required
+            registration={register("emailAddress")}
+            error={errors.emailAddress?.message}
+          />
+        )}
         <InputField
           id="phoneNumber"
           label="Phone Number"

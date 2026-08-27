@@ -22,7 +22,9 @@ export const employeeSchema = z
       .trim()
       .min(1, { message: "Last name cannot be empty" }),
     preferredName: optionalString,
-    emailAddress: z.string().email({ message: "Invalid email address" }),
+    emailAddress: z
+      .union([z.email({ message: "Invalid email address" }), z.undefined()])
+      .optional(),
     phoneNumber: z
       .string()
       .trim()
@@ -60,7 +62,13 @@ export const employeeSchema = z
       .string()
       .min(1, "Start date is required")
       .transform((val) => new Date(val).toISOString().split("T")[0]),
-    lastDate: optionalString,
+    lastDate: z
+      .union([z.string(), z.null(), z.undefined()])
+      .transform((val) => {
+        if (!val || val.trim() === "") return null;
+        return new Date(val).toISOString().split("T")[0];
+      })
+      .optional(),
     isCurrentlyEmployed: z.boolean(),
   })
   .refine(

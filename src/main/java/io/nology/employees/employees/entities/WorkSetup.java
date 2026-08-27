@@ -20,15 +20,15 @@ public enum WorkSetup {
     }
 
     @JsonCreator
-    public static WorkSetup fromLabel(String label) {
-        if (label == null) {
+    public static WorkSetup fromLabel(String value) {
+        if (value == null || value.trim().isEmpty()) {
             return null;
         }
         for (WorkSetup workSetup : WorkSetup.values()) {
-            if (workSetup.getLabel().equalsIgnoreCase(label.trim())) {
+            if (workSetup.label.equalsIgnoreCase(value.trim()) || workSetup.name().equalsIgnoreCase(value.trim())) {
                 return workSetup;
             }
         }
-        throw new IllegalArgumentException("Unknown work setup label: " + label);
+        throw new IllegalArgumentException("Unknown work setup: " + value);
     }
-}
+};

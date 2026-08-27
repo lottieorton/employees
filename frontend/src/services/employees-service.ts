@@ -47,7 +47,6 @@ export const createEmployee = async (
 
   if (response.status !== 201) {
     const errorResponseBody = await response.json().catch(() => null);
-    console.log(errorResponseBody);
     throw new FetchError(
       errorResponseBody.message ?? "Failed to create employee",
     );
