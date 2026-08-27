@@ -1,20 +1,5 @@
 import { z } from "zod";
 
-export const SeniorityLevelEnum = z.enum([
-  "JUNIOR",
-  "MID",
-  "SENIOR",
-  "LEAD",
-  "PRINCIPAL",
-]);
-export const DepartmentEnum = z.enum([
-  "Engineering",
-  "Quality Assurance",
-  "Design",
-  "Product",
-  "Human Resources",
-]);
-
 const optionalString = z
   .string()
   .transform((val) => {
@@ -59,12 +44,11 @@ export const employeeSchema = z
       .trim()
       .min(1, { message: "Postal Code cannot be empty" }),
     country: z.string().trim().min(1, { message: "Country cannot be empty" }),
-    roleName: z
+    roleName: z.string().trim().min(1, { message: "Must select a role" }),
+    seniorityLevel: z
       .string()
-      .trim()
-      .min(1, { message: "Role name cannot be empty" }),
-    seniorityLevel: SeniorityLevelEnum,
-    department: DepartmentEnum,
+      .min(1, { message: "Must select level of seniority" }),
+    department: z.string().min(1, { message: "Must select a department" }),
     manager: z.string().nullable().optional(),
     workSetup: z
       .string({ message: "Must select work setup" })

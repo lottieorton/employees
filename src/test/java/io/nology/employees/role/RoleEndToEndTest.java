@@ -66,7 +66,7 @@ public class RoleEndToEndTest {
         .then().statusCode(HttpStatus.OK.value())
         .body("$", hasSize(2))
         .body("name", hasItems("Software Developer", "Senior Software Developer"))
-        .body("seniorityLevel", hasItems("JUNIOR", "SENIOR"))
+        .body("seniorityLevel", hasItems("Junior", "Senior"))
         .body("department", hasItems("Engineering", "Engineering"))
         .body(matchesJsonSchemaInClasspath("schemas/role-list-schema.json"));
     }
@@ -82,7 +82,7 @@ public class RoleEndToEndTest {
         // assert
         .then().statusCode(HttpStatus.OK.value())
         .body("name", equalTo("Software Developer"))
-        .body("seniorityLevel", equalTo("JUNIOR"))
+        .body("seniorityLevel", equalTo("Junior"))
         .body("department", equalTo("Engineering"))
         .body(matchesJsonSchemaInClasspath("schemas/role-schema.json"));
     }
@@ -123,7 +123,7 @@ public class RoleEndToEndTest {
         // assert
         .then().statusCode(HttpStatus.CREATED.value())
         .body("name", equalTo("Software Developer"))
-        .body("seniorityLevel", equalTo("JUNIOR"))
+        .body("seniorityLevel", equalTo("Junior"))
         .body("department", equalTo("Engineering"))
         .body(matchesJsonSchemaInClasspath("schemas/role-schema.json"));
     }
@@ -169,7 +169,7 @@ public class RoleEndToEndTest {
         // assert
         .then().statusCode(HttpStatus.OK.value())
         .body("name", equalTo("Senior Software Developer"))
-        .body("seniorityLevel", equalTo("SENIOR"))
+        .body("seniorityLevel", equalTo("Senior"))
         .body("department", equalTo("Product"))
         .body(matchesJsonSchemaInClasspath("schemas/role-schema.json")); 
     }

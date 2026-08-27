@@ -1,4 +1,4 @@
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm, useWatch, type SubmitHandler } from "react-hook-form";
 import Button from "../Button/Button";
 import CheckboxField from "../fields/CheckboxField/CheckboxField";
 import InputField from "../fields/InputField/InputField";
@@ -8,6 +8,8 @@ import { employeeSchema, type FormValues } from "../../schemas/employeeSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { getEmployeeFormEnums } from "../../services/employees-service";
+import type { Role } from "../../interfaces/Employee";
+import { getAllRoles } from "../../services/roles-service";
 
 interface EmployeeFormProps {
   handlePageSubmit: () => void;
@@ -38,10 +40,12 @@ export default function EmployeeForm({
     workSetup: [],
     employmentType: [],
   });
+  const [roles, setRoles] = useState<Role[]>();
 
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(employeeSchema),
@@ -50,14 +54,67 @@ export default function EmployeeForm({
     },
   });
 
+  const selectedRoleName = useWatch({ control, name: "roleName" });
+  const selectedSeniority = useWatch({ control, name: "seniorityLevel" });
+  const selectedDepartment = useWatch({ control, name: "department" });
+
   useEffect(() => {
     getEmployeeFormEnums()
       .then(setFormOptions)
       .catch(() => console.log("Issue with fetching enums"));
+
+    getAllRoles()
+      .then(setRoles)
+      .catch(() => console.log("Issue with fetching roles"));
   }, []);
+
+  const getFilteredRolesExcluding = (excludeField?: keyof Role) => {
+    if (!roles) return [];
+
+    return roles.filter((role) => {
+      const nameMatches =
+        excludeField === "name" ||
+        !selectedRoleName ||
+        role.name === selectedRoleName;
+
+      const seniorityMatches =
+        excludeField === "seniorityLevel" ||
+        !selectedSeniority ||
+        role.seniorityLevel === selectedSeniority;
+
+      const departmentMatches =
+        excludeField === "department" ||
+        !selectedDepartment ||
+        role.department === selectedDepartment;
+
+      return nameMatches && seniorityMatches && departmentMatches;
+    });
+  };
+
+  const rolesToUniqueList = (targetKey: keyof Role) => {
+    const availableRoles = getFilteredRolesExcluding(targetKey);
+    return [
+      ...new Set(
+        availableRoles
+          .filter((r) => r[targetKey] != null)
+          .map((r: Role) => r[targetKey]),
+      ),
+    ].map((value) => {
+      return { label: String(value), value: String(value) };
+    });
+  };
 
   const onSubmit: SubmitHandler<FormValues> = (d): void => {
     console.log(d);
+    const roleId = roles?.filter((r) => {
+      return (
+        r.seniorityLevel === d.seniorityLevel &&
+        r.seniorityLevel === d.seniorityLevel &&
+        r.department === d.department
+      );
+    })[0].id;
+    console.log(roleId);
+
     handlePageSubmit();
   };
 
@@ -185,15 +242,13 @@ export default function EmployeeForm({
         />
 
         <h3 className="text-base text-zinc-950 font-semibold col-span-full pt-6 pb-2 3xl:text-2xl">
-          Employement Information
+          Employment Information
         </h3>
         <SelectField
           id="roleName"
           label="Role Name"
           colSpan="col-span-2 md:col-span-1"
-          options={[
-            { label: "Software Developer", value: "Software Developer" },
-          ]}
+          options={rolesToUniqueList("name")}
           required
           registration={register("roleName")}
           error={errors.roleName?.message}
@@ -202,7 +257,8 @@ export default function EmployeeForm({
           id="seniorityLevel"
           label="Seniority"
           colSpan="col-span-2 md:col-span-1"
-          options={[{ label: "Junior", value: "JUNIOR" }]}
+          // options={roleToUniqueList(filteredRoles, "seniorityLevel")}
+          options={rolesToUniqueList("seniorityLevel")}
           required
           registration={register("seniorityLevel")}
           error={errors.seniorityLevel?.message}
@@ -211,7 +267,7 @@ export default function EmployeeForm({
           id="department"
           label="Department"
           colSpan="col-span-2 md:col-span-1"
-          options={[{ label: "Engineering", value: "Engineering" }]}
+          options={rolesToUniqueList("department")}
           required
           registration={register("department")}
           error={errors.department?.message}
