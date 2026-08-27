@@ -1,7 +1,10 @@
 package io.nology.employees.employees;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
@@ -15,6 +18,9 @@ import io.nology.employees.employees.dtos.CreateEmployeeRequest;
 import io.nology.employees.employees.dtos.FindEmployeesQueryDto;
 import io.nology.employees.employees.dtos.UpdateEmployeeRequest;
 import io.nology.employees.employees.entities.Employee;
+import io.nology.employees.employees.entities.EmploymentType;
+import io.nology.employees.employees.entities.Pronouns;
+import io.nology.employees.employees.entities.WorkSetup;
 import io.nology.employees.role.RoleService;
 import io.nology.employees.role.entities.Role;
 
@@ -103,6 +109,15 @@ public class EmployeeService {
         this.repo.delete(result.get());
         return true;
     }
+
+    public Map<String, List<Map<String, String>>> getAllEnums() {
+        Map<String, List<Map<String, String>>> enums = new HashMap<>();
+        enums.put("pronouns", Arrays.stream(Pronouns.values()).map(e -> Map.of("label", e.getLabel(), "value", e.name())).toList());
+        enums.put("employmentType", Arrays.stream(EmploymentType.values()).map(e -> Map.of("label", e.getLabel(), "value", e.name())).toList());
+        enums.put("workSetup", Arrays.stream(WorkSetup.values()).map(e -> Map.of("label", e.getLabel(), "value", e.name())).toList());
+        return enums;
+    }
+
 
     private void validateDates(LocalDate startDate, LocalDate lastDate) {
         if (startDate != null && lastDate != null && startDate.isAfter(lastDate)) {

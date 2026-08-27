@@ -697,7 +697,7 @@ public class EmployeeEndToEnd {
         .body("firstName", equalTo("John"))
         .body("address.formattedAddress", equalTo("Palm Tree Lane, Sydney"))
         .body("role.name", equalTo("Software Developer"))
-        .body("workSetup", equalTo("REMOTE"))
+        .body("workSetup", equalTo("Remote"))
         .body("employmentType", equalTo("Part-Time Permanent"))
         .body("manager.fullName", equalTo("Sarah Jenkins"))
         .body("emailAddress", equalTo("john.smith@mycompany.com"))
@@ -914,4 +914,23 @@ public class EmployeeEndToEnd {
         .body(matchesJsonSchemaInClasspath("schemas/api-error-schema.json"));
     }    
 
+    @Test
+    public void getAllEmployeeEnums_ReturnOKAndMapOfEnums() {
+        // act
+        given().when().get("/employees/enums")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("$", hasKey("employmentType"))
+        .body("$", hasKey("pronouns"))
+        .body("$", hasKey("workSetup"))
+        .body("employmentType", hasSize(EmploymentType.values().length))
+        .body("pronouns", hasSize(Pronouns.values().length))
+        .body("workSetup", hasSize(WorkSetup.values().length))
+        .body("employmentType[0].label", equalTo("Full-Time Permanent"))
+        .body("employmentType[0].value", equalTo("FULL_TIME_PERMANENT"))
+        .body("pronouns[0].label", equalTo("He/Him"))
+        .body("pronouns[0].value", equalTo("HE_HIM"))
+        .body("workSetup[0].label", equalTo("Onsite"))
+        .body("workSetup[0].value", equalTo("ON_SITE"));
+    }
 }

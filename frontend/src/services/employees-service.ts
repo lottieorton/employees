@@ -27,3 +27,11 @@ export const getEmployeeById = async (id?: string): Promise<Employee> => {
   }
   return response.json();
 };
+
+export const getEmployeeFormEnums = async () => {
+  const response = await fetch(`${API_URL}/employees/enums`);
+  if (!response.ok) {
+    throw new FetchError("Failed for fetch form enums");
+  }
+  return response.json();
+};

@@ -6,6 +6,8 @@ import RadioGroupField from "../fields/RadioGroupField/RadioGroupField";
 import SelectField from "../fields/SelectField/SelectField";
 import { employeeSchema, type FormValues } from "../../schemas/employeeSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
+import { getEmployeeFormEnums } from "../../services/employees-service";
 
 interface EmployeeFormProps {
   handlePageSubmit: () => void;
@@ -14,12 +16,29 @@ interface EmployeeFormProps {
   warningBtnText: string;
 }
 
+export interface FormOption {
+  label: string;
+  value: string;
+}
+
+interface FormOptions {
+  pronouns: FormOption[];
+  workSetup: FormOption[];
+  employmentType: FormOption[];
+}
+
 export default function EmployeeForm({
   handlePageSubmit,
   handleWarningClick,
   submitBtnText,
   warningBtnText,
 }: EmployeeFormProps) {
+  const [formOptions, setFormOptions] = useState<FormOptions>({
+    pronouns: [],
+    workSetup: [],
+    employmentType: [],
+  });
+
   const {
     register,
     handleSubmit,
@@ -30,6 +49,12 @@ export default function EmployeeForm({
       isCurrentlyEmployed: true,
     },
   });
+
+  useEffect(() => {
+    getEmployeeFormEnums()
+      .then(setFormOptions)
+      .catch(() => console.log("Issue with fetching enums"));
+  }, []);
 
   const onSubmit: SubmitHandler<FormValues> = (d): void => {
     console.log(d);
@@ -49,18 +74,7 @@ export default function EmployeeForm({
           id="pronouns"
           label="Pronouns"
           colSpan="col-span-2"
-          options={[
-            { label: "He/Him", value: "He/Him" },
-            { label: "She/Her", value: "She/Her" },
-            { label: "They/Them", value: "They/Them" },
-            { label: "He/They", value: "He/They" },
-            { label: "She/They", value: "She/They" },
-            { label: "Xe/Xem", value: "Xe/Xem" },
-            { label: "Ze/Zir", value: "Ze/Zir" },
-            { label: "Any/All", value: "Any/All" },
-            { label: "Other", value: "Other" },
-            { label: "Prefer not to say", value: "Prefer not to say" },
-          ]}
+          options={formOptions.pronouns}
           required
           registration={register("pronouns")}
           error={errors.pronouns?.message}
@@ -179,9 +193,6 @@ export default function EmployeeForm({
           colSpan="col-span-2 md:col-span-1"
           options={[
             { label: "Software Developer", value: "Software Developer" },
-            { label: "QA / Test Engineer", value: "QA / Test Engineer" },
-            { label: "DevOps Engineer", value: "DevOps Engineer" },
-            { label: "Engineering Manager", value: "Engineering Manager" },
           ]}
           required
           registration={register("roleName")}
@@ -191,13 +202,7 @@ export default function EmployeeForm({
           id="seniorityLevel"
           label="Seniority"
           colSpan="col-span-2 md:col-span-1"
-          options={[
-            { label: "Junior", value: "JUNIOR" },
-            { label: "Mid", value: "MID" },
-            { label: "Senior", value: "SENIOR" },
-            { label: "Lead", value: "LEAD" },
-            { label: "Principal", value: "PRINCIPAL" },
-          ]}
+          options={[{ label: "Junior", value: "JUNIOR" }]}
           required
           registration={register("seniorityLevel")}
           error={errors.seniorityLevel?.message}
@@ -206,13 +211,7 @@ export default function EmployeeForm({
           id="department"
           label="Department"
           colSpan="col-span-2 md:col-span-1"
-          options={[
-            { label: "Engineering", value: "Engineering" },
-            { label: "Quality Assurance", value: "Quality Assurance" },
-            { label: "Design", value: "Design" },
-            { label: "Product", value: "Product" },
-            { label: "Human Resources", value: "Human Resources" },
-          ]}
+          options={[{ label: "Engineering", value: "Engineering" }]}
           required
           registration={register("department")}
           error={errors.department?.message}
@@ -232,11 +231,7 @@ export default function EmployeeForm({
           id="workSetup"
           name="workSetup"
           label="Work Setup"
-          options={[
-            { label: "On-site", value: "ONSITE" },
-            { label: "Hybrid", value: "HYBRID" },
-            { label: "Remote", value: "REMOTE" },
-          ]}
+          options={formOptions.workSetup}
           required
           registration={register("workSetup")}
           error={errors.workSetup?.message}
@@ -245,11 +240,7 @@ export default function EmployeeForm({
           id="employmentType"
           name="employmentType"
           label="Employment Type"
-          options={[
-            { label: "Full-Time Permanent", value: "FULL_TIME" },
-            { label: "Part-Time Permanent", value: "PART_TIME" },
-            { label: "Contractor", value: "CONTRACTOR" },
-          ]}
+          options={formOptions.employmentType}
           required
           registration={register("employmentType")}
           error={errors.employmentType?.message}

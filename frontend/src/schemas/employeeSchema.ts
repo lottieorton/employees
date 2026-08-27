@@ -1,24 +1,5 @@
 import { z } from "zod";
 
-export const PronounsEnum = z.enum([
-  "He/Him",
-  "She/Her",
-  "They/Them",
-  "He/They",
-  "She/They",
-  "Xe/Xem",
-  "Ze/Zir",
-  "Any/All",
-  "Other",
-  "Prefer not to say",
-]);
-export const WorkSetupEnum = z.enum(["ONSITE", "HYBRID", "REMOTE"]);
-export const EmploymentTypeEnum = z.enum([
-  "FULL_TIME",
-  "PART_TIME",
-  "CONTRACTOR",
-]);
-
 export const SeniorityLevelEnum = z.enum([
   "JUNIOR",
   "MID",
@@ -45,7 +26,7 @@ const optionalString = z
 
 export const employeeSchema = z
   .object({
-    pronouns: PronounsEnum,
+    pronouns: z.string().min(1, { message: "Must select pronoun choice" }),
     firstName: z
       .string()
       .trim()
@@ -56,7 +37,7 @@ export const employeeSchema = z
       .trim()
       .min(1, { message: "Last name cannot be empty" }),
     preferredName: optionalString,
-    emailAddress: z.email({ message: "Invalid email address" }),
+    emailAddress: z.string().email({ message: "Invalid email address" }),
     phoneNumber: z
       .string()
       .trim()
@@ -85,8 +66,12 @@ export const employeeSchema = z
     seniorityLevel: SeniorityLevelEnum,
     department: DepartmentEnum,
     manager: z.string().nullable().optional(),
-    workSetup: WorkSetupEnum,
-    employmentType: EmploymentTypeEnum,
+    workSetup: z
+      .string({ message: "Must select work setup" })
+      .min(1, { message: "Work setup cannot be empty" }),
+    employmentType: z
+      .string({ message: "Must select employment type" })
+      .min(1, { message: "Employment type cannot be empty" }),
     startDate: z.string().min(1, "Start date is required"),
     lastDate: optionalString,
     isCurrentlyEmployed: z.boolean(),

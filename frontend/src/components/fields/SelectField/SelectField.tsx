@@ -1,18 +1,14 @@
 import React from "react";
 import type { FieldWrapperProps } from "../FieldWrapper/FieldWrapper";
 import type { UseFormRegisterReturn } from "react-hook-form";
-
-export interface SelectOption {
-  label: string;
-  value: string;
-}
+import type { FormOption } from "../../EmployeeForm/EmployeeForm";
 
 interface SelectFieldProps
   extends
     Omit<FieldWrapperProps, "children">,
     Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "id"> {
   id: string;
-  options: SelectOption[];
+  options: FormOption[];
   registration?: UseFormRegisterReturn;
 }
 

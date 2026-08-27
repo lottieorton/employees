@@ -28,14 +28,32 @@ export default function EmployeePage() {
   };
 
   if (isLoading) {
-    return <LoadingBanner>Loading employee details...</LoadingBanner>;
+    return (
+      <div className="flex flex-col gap-3">
+        <Link
+          to="/"
+          className="flex justify-start text-indigo-600 font-medium text-base hover:underline transition-colors cursor-pointer hover:text-indigo-800 3xl:text-2xl"
+        >
+          ← Back to Team
+        </Link>
+        <LoadingBanner>Loading employee details...</LoadingBanner>
+      </div>
+    );
   }
 
   if (isError || !employee) {
     return (
-      <ErrorBanner>
-        Failed to load employee details. Please try refreshing the page.
-      </ErrorBanner>
+      <div className="flex flex-col gap-3">
+        <Link
+          to="/"
+          className="flex justify-start text-indigo-600 font-medium text-base hover:underline transition-colors cursor-pointer hover:text-indigo-800 3xl:text-2xl"
+        >
+          ← Back to Team
+        </Link>
+        <ErrorBanner>
+          Failed to load employee details. Please try refreshing the page.
+        </ErrorBanner>
+      </div>
     );
   }
 

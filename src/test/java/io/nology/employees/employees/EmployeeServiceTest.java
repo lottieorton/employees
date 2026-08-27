@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -736,4 +737,22 @@ public class EmployeeServiceTest {
         verify(this.repo).findById(2L);
         verify(this.repo, never()).delete(any(Employee.class));
     }
+
+    @Test
+    public void getAllEnums_ReturnsMapOfEnums() {
+        Map<String, List<Map<String, String>>> result = this.employeeService.getAllEnums();
+        // assert
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        assertEquals(Pronouns.values().length, result.get("pronouns").size());
+        assertEquals(WorkSetup.values().length, result.get("workSetup").size());
+        assertEquals(EmploymentType.values().length, result.get("employmentType").size());
+
+        Map<String, String> firstPronoun = result.get("pronouns").get(0);
+        assertTrue(firstPronoun.containsKey("label"));
+        assertTrue(firstPronoun.containsValue("He/Him"));
+        assertTrue(firstPronoun.containsKey("value"));
+        assertTrue(firstPronoun.containsValue("HE_HIM"));
+    }
+
 }

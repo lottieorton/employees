@@ -4,16 +4,12 @@ import {
   type FieldWrapperProps,
 } from "../FieldWrapper/FieldWrapper";
 import type { UseFormRegisterReturn } from "react-hook-form";
-
-interface RadioOption {
-  label: string;
-  value: string;
-}
+import type { FormOption } from "../../EmployeeForm/EmployeeForm";
 
 interface RadioGroupFieldProps extends Omit<FieldWrapperProps, "children"> {
   id: string;
   name: string;
-  options: RadioOption[];
+  options: FormOption[];
   direction?: "row" | "col";
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
