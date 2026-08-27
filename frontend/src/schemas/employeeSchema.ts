@@ -49,14 +49,17 @@ export const employeeSchema = z
       .string()
       .min(1, { message: "Must select level of seniority" }),
     department: z.string().min(1, { message: "Must select a department" }),
-    manager: z.string().nullable().optional(),
+    managerId: z.string().nullable().optional(),
     workSetup: z
       .string({ message: "Must select work setup" })
       .min(1, { message: "Work setup cannot be empty" }),
     employmentType: z
       .string({ message: "Must select employment type" })
       .min(1, { message: "Employment type cannot be empty" }),
-    startDate: z.string().min(1, "Start date is required"),
+    startDate: z
+      .string()
+      .min(1, "Start date is required")
+      .transform((val) => new Date(val).toISOString().split("T")[0]),
     lastDate: optionalString,
     isCurrentlyEmployed: z.boolean(),
   })

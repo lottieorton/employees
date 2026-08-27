@@ -1,5 +1,6 @@
 package io.nology.employees.employees.entities;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Pronouns {
@@ -25,15 +26,16 @@ public enum Pronouns {
         return label;
     }
 
-    public static Pronouns fromLabel(String label) {
-        if (label == null) {
+    @JsonCreator
+    public static Pronouns fromLabel(String value) {
+        if (value == null || value.trim().isEmpty()) {
             return null;
         }
         for (Pronouns pronoun : Pronouns.values()) {
-            if (pronoun.getLabel().equalsIgnoreCase(label.trim())) {
+            if (pronoun.label.equalsIgnoreCase(value.trim()) || pronoun.name().equalsIgnoreCase(value.trim())) {
                 return pronoun;
             }
         }
-        throw new IllegalArgumentException("Unknown pronoun label: " + label);
+        throw new IllegalArgumentException("Unknown pronoun: " + value);
     }
 }

@@ -1,5 +1,6 @@
 package io.nology.employees.employees.entities;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum WorkSetup {
@@ -18,6 +19,7 @@ public enum WorkSetup {
         return label;
     }
 
+    @JsonCreator
     public static WorkSetup fromLabel(String label) {
         if (label == null) {
             return null;

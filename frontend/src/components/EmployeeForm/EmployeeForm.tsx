@@ -1,4 +1,4 @@
-import { useForm, useWatch, type SubmitHandler } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import Button from "../Button/Button";
 import CheckboxField from "../fields/CheckboxField/CheckboxField";
 import InputField from "../fields/InputField/InputField";
@@ -8,11 +8,11 @@ import { employeeSchema, type FormValues } from "../../schemas/employeeSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { getEmployeeFormEnums } from "../../services/employees-service";
-import type { Role } from "../../interfaces/Employee";
-import { getAllRoles } from "../../services/roles-service";
+import { useEmployees } from "../../hooks/useEmployees";
+import { useRoleFilters } from "../../hooks/useRoleFilters";
 
 interface EmployeeFormProps {
-  handlePageSubmit: () => void;
+  handlePageSubmit: (formData: FormValues) => void;
   handleWarningClick: () => void;
   submitBtnText: string;
   warningBtnText: string;
@@ -20,7 +20,7 @@ interface EmployeeFormProps {
 
 export interface FormOption {
   label: string;
-  value: string;
+  value: string | number;
 }
 
 interface FormOptions {
@@ -40,7 +40,8 @@ export default function EmployeeForm({
     workSetup: [],
     employmentType: [],
   });
-  const [roles, setRoles] = useState<Role[]>();
+
+  const { data: employees = [], isLoading, isError } = useEmployees();
 
   const {
     register,
@@ -54,69 +55,25 @@ export default function EmployeeForm({
     },
   });
 
-  const selectedRoleName = useWatch({ control, name: "roleName" });
-  const selectedSeniority = useWatch({ control, name: "seniorityLevel" });
-  const selectedDepartment = useWatch({ control, name: "department" });
+  const { getUniqueOptions, getSelectedRoleId } = useRoleFilters(control);
 
   useEffect(() => {
     getEmployeeFormEnums()
       .then(setFormOptions)
-      .catch(() => console.log("Issue with fetching enums"));
-
-    getAllRoles()
-      .then(setRoles)
-      .catch(() => console.log("Issue with fetching roles"));
+      .catch(() => console.error("Issue with fetching enums"));
   }, []);
 
-  const getFilteredRolesExcluding = (excludeField?: keyof Role) => {
-    if (!roles) return [];
-
-    return roles.filter((role) => {
-      const nameMatches =
-        excludeField === "name" ||
-        !selectedRoleName ||
-        role.name === selectedRoleName;
-
-      const seniorityMatches =
-        excludeField === "seniorityLevel" ||
-        !selectedSeniority ||
-        role.seniorityLevel === selectedSeniority;
-
-      const departmentMatches =
-        excludeField === "department" ||
-        !selectedDepartment ||
-        role.department === selectedDepartment;
-
-      return nameMatches && seniorityMatches && departmentMatches;
-    });
-  };
-
-  const rolesToUniqueList = (targetKey: keyof Role) => {
-    const availableRoles = getFilteredRolesExcluding(targetKey);
-    return [
-      ...new Set(
-        availableRoles
-          .filter((r) => r[targetKey] != null)
-          .map((r: Role) => r[targetKey]),
-      ),
-    ].map((value) => {
-      return { label: String(value), value: String(value) };
-    });
-  };
-
   const onSubmit: SubmitHandler<FormValues> = (d): void => {
-    console.log(d);
-    const roleId = roles?.filter((r) => {
-      return (
-        r.seniorityLevel === d.seniorityLevel &&
-        r.seniorityLevel === d.seniorityLevel &&
-        r.department === d.department
-      );
-    })[0].id;
-    console.log(roleId);
-
-    handlePageSubmit();
+    const formData = { ...d, roleId: getSelectedRoleId(d), addressId: 1 };
+    handlePageSubmit(formData);
   };
+
+  const employeeList = employees.map((e) => {
+    return {
+      value: e.id,
+      label: `${e.firstName} ${e.lastName} (${e.role?.name})`,
+    };
+  });
 
   return (
     <section className="w-full flex flex-col gap-5">
@@ -136,7 +93,6 @@ export default function EmployeeForm({
           registration={register("pronouns")}
           error={errors.pronouns?.message}
         />
-
         <InputField
           id="firstName"
           label="First Name"
@@ -248,7 +204,7 @@ export default function EmployeeForm({
           id="roleName"
           label="Role Name"
           colSpan="col-span-2 md:col-span-1"
-          options={rolesToUniqueList("name")}
+          options={getUniqueOptions("name")}
           required
           registration={register("roleName")}
           error={errors.roleName?.message}
@@ -258,7 +214,7 @@ export default function EmployeeForm({
           label="Seniority"
           colSpan="col-span-2 md:col-span-1"
           // options={roleToUniqueList(filteredRoles, "seniorityLevel")}
-          options={rolesToUniqueList("seniorityLevel")}
+          options={getUniqueOptions("seniorityLevel")}
           required
           registration={register("seniorityLevel")}
           error={errors.seniorityLevel?.message}
@@ -267,7 +223,7 @@ export default function EmployeeForm({
           id="department"
           label="Department"
           colSpan="col-span-2 md:col-span-1"
-          options={rolesToUniqueList("department")}
+          options={getUniqueOptions("department")}
           required
           registration={register("department")}
           error={errors.department?.message}
@@ -276,12 +232,9 @@ export default function EmployeeForm({
           id="manager"
           label="Manager"
           colSpan="col-span-2 md:col-span-1"
-          options={[
-            { label: "Manager One", value: "Manager One" },
-            { label: "Manager Two", value: "ManagerTwo" },
-          ]}
-          registration={register("manager")}
-          error={errors.manager?.message}
+          options={employeeList}
+          registration={register("managerId")}
+          error={errors.managerId?.message}
         />
         <RadioGroupField
           id="workSetup"

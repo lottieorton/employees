@@ -1,12 +1,17 @@
 import { Link, useNavigate } from "react-router-dom";
 import EmployeeForm from "../../EmployeeForm/EmployeeForm";
+import type { FormValues } from "../../../schemas/employeeSchema";
+import { useCreateEmployee } from "../../../hooks/useEmployees";
 
 export default function CreateEmployeePage() {
   const navigate = useNavigate();
 
-  const handleSubmit = () => {
-    // create address
-    // createuser
+  const { mutate: createEmployee, isError, error } = useCreateEmployee();
+
+  const handleSubmit = (formData: FormValues) => {
+    console.log("formData in create " + formData);
+    console.log(formData);
+    createEmployee(formData);
     navigate("/");
   };
 

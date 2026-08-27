@@ -1,16 +1,22 @@
 import { FetchError } from "../errors/errors";
 import type { Employee } from "../interfaces/Employee";
 import type { SearchQuery } from "../interfaces/SearchQuery";
+import type { FormValues } from "../schemas/employeeSchema";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export const getAllEmployees = async (
-  searchQuery: SearchQuery,
+  searchQuery?: SearchQuery,
 ): Promise<Employee[]> => {
-  const queryString = Object.entries(searchQuery)
-    .map(([key, value]) => `${key}=${value}`)
-    .join("&");
-  const resposne = await fetch(`${API_URL}/employees?${queryString}`);
+  let queryString = "";
+  if (searchQuery) {
+    queryString +=
+      "?" +
+      Object.entries(searchQuery)
+        .map(([key, value]) => `${key}=${value}`)
+        .join("&");
+  }
+  const resposne = await fetch(`${API_URL}/employees${queryString}`);
   if (!resposne.ok) {
     throw new FetchError("Failed to fetch employees");
   }
@@ -24,6 +30,27 @@ export const getEmployeeById = async (id?: string): Promise<Employee> => {
   const response = await fetch(`${API_URL}/employees/${id}`);
   if (!response.ok) {
     throw new FetchError("Failed to fetch employee");
+  }
+  return response.json();
+};
+
+export const createEmployee = async (
+  formData: FormValues,
+): Promise<Employee> => {
+  const response = await fetch(`${API_URL}/employees`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formData),
+  });
+
+  if (response.status !== 201) {
+    const errorResponseBody = await response.json().catch(() => null);
+    console.log(errorResponseBody);
+    throw new FetchError(
+      errorResponseBody.message ?? "Failed to create employee",
+    );
   }
   return response.json();
 };
