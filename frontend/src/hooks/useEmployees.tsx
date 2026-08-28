@@ -4,6 +4,7 @@ import {
   createEmployee,
   getAllEmployees,
   getEmployeeById,
+  updateEmployee,
 } from "../services/employees-service";
 import type { SearchQuery } from "../interfaces/SearchQuery";
 import type { FormValues } from "../schemas/employeeSchema";
@@ -30,6 +31,22 @@ export function useCreateEmployee() {
 
   return useMutation<Employee, Error, FormValues>({
     mutationFn: (formData) => createEmployee(formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [EMPLOYEES_KEY] });
+    },
+  });
+}
+
+interface UpdateEmployeePayload {
+  id: number;
+  formData: FormValues;
+}
+
+export function useUpdateEmployee() {
+  const queryClient = useQueryClient();
+
+  return useMutation<Employee, Error, UpdateEmployeePayload>({
+    mutationFn: ({ id, formData }) => updateEmployee(id, formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [EMPLOYEES_KEY] });
     },

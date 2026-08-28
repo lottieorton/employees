@@ -1,18 +1,10 @@
-export interface AddressSummary {
-  id: number;
-  formattedAddress: string;
-}
-
-export interface Role {
-  id: number;
-  name: string;
-  seniorityLevel: string;
-  department: string;
-}
+import type { Role } from "./Role";
+import type { Address } from "./Address";
 
 export interface ManagerSummary {
   id: number;
   fullName: string;
+  role: string;
 }
 
 export interface Employee {
@@ -24,7 +16,7 @@ export interface Employee {
   pronouns: string;
   emailAddress: string;
   phoneNumber: string;
-  address: AddressSummary | null;
+  address: Address | null;
   role: Role | null;
   manager: ManagerSummary | null;
   workSetup: string;

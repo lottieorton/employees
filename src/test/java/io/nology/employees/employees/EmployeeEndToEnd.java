@@ -450,7 +450,7 @@ public class EmployeeEndToEnd {
         // assert
         .then().statusCode(HttpStatus.CREATED.value())
         .body("firstName", equalTo("Alex"))
-        .body("address.formattedAddress", equalTo("Palm Tree Lane, Sydney"))
+        .body("address.unitNumber", equalTo("1A"))
         .body("role.name", equalTo("Software Developer"))
         .body("manager.fullName", equalTo("Sarah Jenkins"))
         .body("emailAddress", equalTo("alex.rivera@mycompany.com"))
@@ -695,7 +695,7 @@ public class EmployeeEndToEnd {
         // assert
         .then().statusCode(HttpStatus.OK.value())
         .body("firstName", equalTo("John"))
-        .body("address.formattedAddress", equalTo("Palm Tree Lane, Sydney"))
+        .body("address.unitNumber", equalTo("1A"))
         .body("role.name", equalTo("Software Developer"))
         .body("workSetup", equalTo("Remote"))
         .body("employmentType", equalTo("Part-Time Permanent"))

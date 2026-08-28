@@ -29,10 +29,27 @@ export default function EmployeeDetails({ employee }: EmployeeDetailsProps) {
         <ViewOnlyField label="Email Address" value={employee.emailAddress} />
         <ViewOnlyField label="Phone Number" value={employee.phoneNumber} />
         <ViewOnlyField
-          label="Address"
-          value={employee.address?.formattedAddress}
-          colSpan="col-span-2"
+          label="Unit Number"
+          value={employee.address?.unitNumber}
         />
+        <ViewOnlyField
+          label="Street Address"
+          value={employee.address?.streetAddress}
+        />
+        <ViewOnlyField
+          label="Address Line 2"
+          value={employee.address?.addressLine2}
+        />
+        <ViewOnlyField label="City" value={employee.address?.city} />
+        <ViewOnlyField
+          label="State/Province/Region"
+          value={employee.address?.stateProvinceRegion}
+        />
+        <ViewOnlyField
+          label="Postal Code"
+          value={employee.address?.postalCode}
+        />
+        <ViewOnlyField label="Country" value={employee.address?.country} />
         <h3 className="text-base text-zinc-950 font-semibold col-span-full pt-6 pb-2 3xl:text-2xl">
           Employement Information
         </h3>
@@ -42,7 +59,13 @@ export default function EmployeeDetails({ employee }: EmployeeDetailsProps) {
           value={employee.role?.seniorityLevel}
         />
         <ViewOnlyField label="Department" value={employee.role?.department} />
-        <ViewOnlyField label="Manager" value={employee.manager?.fullName} />
+        <ViewOnlyField
+          label="Manager"
+          value={
+            employee.manager &&
+            `${employee.manager?.fullName} (${employee.manager?.role})`
+          }
+        />
         <ViewOnlyField label="Work Setup" value={employee.workSetup} />
         <ViewOnlyField
           label="Employment Type"

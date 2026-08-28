@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import EmployeeForm from "../../EmployeeForm/EmployeeForm";
 import type { FormValues } from "../../../schemas/employeeSchema";
 import { useCreateEmployee } from "../../../hooks/useEmployees";
+import { createAddress } from "../../../services/addresses-service";
 
 export default function CreateEmployeePage() {
   const navigate = useNavigate();
@@ -9,7 +10,13 @@ export default function CreateEmployeePage() {
   const { mutate: createEmployee, isError, error } = useCreateEmployee();
 
   const handleSubmit = (formData: FormValues) => {
-    createEmployee(formData);
+    createAddress(formData).then((a) => {
+      const employeeFormData = {
+        ...formData,
+        addressId: a.id,
+      };
+      createEmployee(employeeFormData);
+    });
     navigate("/");
   };
 

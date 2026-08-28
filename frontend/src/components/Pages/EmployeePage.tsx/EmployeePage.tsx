@@ -2,23 +2,49 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import EmployeeForm from "../../EmployeeForm/EmployeeForm";
 import EmployeeDetails from "../../EmployeeDetails/EmployeeDetails";
-import { useEmployee } from "../../../hooks/useEmployees";
+import { useEmployee, useUpdateEmployee } from "../../../hooks/useEmployees";
 import LoadingBanner from "../../LoadingBanner/LoadingBanner";
 import ErrorBanner from "../../ErrorBanner/ErrorBanner";
+import type { FormValues } from "../../../schemas/employeeSchema";
+import { updateAddress } from "../../../services/addresses-service";
 
 export default function EmployeePage() {
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const { data: employee, isLoading, isError } = useEmployee(id);
+  const {
+    data: employee,
+    isLoading,
+    isError: isFetchEmployeeError,
+  } = useEmployee(id);
+  const {
+    mutate: updateEmployee,
+    isError: isUpdateEmployeeError,
+    error,
+  } = useUpdateEmployee();
 
   const toggleEditing = () => {
     setIsEditing((prev) => !prev);
   };
 
-  const handleSubmit = () => {
-    // update user
+  const handleSubmit = (
+    formData: FormValues,
+    id?: number,
+    addressId?: number,
+  ) => {
+    if (!id || !addressId) {
+      console.log("No employee id or no address id");
+      return;
+    }
+    updateAddress(addressId, formData).then(() => {
+      const payload = {
+        ...formData,
+        addressId,
+      };
+      updateEmployee({ id, formData: payload });
+    });
+
     toggleEditing();
   };
 
@@ -41,7 +67,7 @@ export default function EmployeePage() {
     );
   }
 
-  if (isError || !employee) {
+  if (isFetchEmployeeError || !employee) {
     return (
       <div className="flex flex-col gap-3">
         <Link
@@ -95,6 +121,7 @@ export default function EmployeePage() {
           handleWarningClick={handleCancelClick}
           submitBtnText="Save Changes"
           warningBtnText="Delete Employee"
+          employee={employee}
         />
       ) : (
         <EmployeeDetails employee={employee} />

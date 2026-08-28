@@ -10,14 +10,19 @@ import { useEffect, useState } from "react";
 import { getEmployeeFormEnums } from "../../services/employees-service";
 import { useEmployees } from "../../hooks/useEmployees";
 import { useRoleFilters } from "../../hooks/useRoleFilters";
-import { createAddress } from "../../services/addresses-service";
+import type { Employee } from "../../interfaces/Employee";
 
 interface EmployeeFormProps {
-  handlePageSubmit: (formData: FormValues) => void;
+  handlePageSubmit: (
+    formData: FormValues,
+    id?: number,
+    addressId?: number,
+  ) => void;
   handleWarningClick: () => void;
   submitBtnText: string;
   warningBtnText: string;
   hasEmail?: boolean;
+  employee?: Employee;
 }
 
 export interface FormOption {
@@ -37,6 +42,7 @@ export default function EmployeeForm({
   submitBtnText,
   warningBtnText,
   hasEmail = true,
+  employee,
 }: EmployeeFormProps) {
   const [formOptions, setFormOptions] = useState<FormOptions>({
     pronouns: [],
@@ -46,13 +52,42 @@ export default function EmployeeForm({
 
   const { data: employees = [], isLoading, isError } = useEmployees();
 
+  const mapDefaultValues = (e: Employee) => {
+    return {
+      pronouns: e.pronouns,
+      firstName: e.firstName,
+      lastName: e.lastName,
+      workSetup: e.workSetup,
+      middleName: e.middleName ?? "",
+      preferredName: e.preferredName ?? "",
+      emailAddress: e.emailAddress,
+      phoneNumber: e.phoneNumber,
+      unitNumber: e.address?.unitNumber ?? "",
+      streetAddress: e.address?.streetAddress ?? "",
+      addressLine2: e.address?.addressLine2 ?? "",
+      city: e.address?.city ?? "",
+      stateProvinceRegion: e.address?.stateProvinceRegion ?? "",
+      postalCode: e.address?.postalCode ?? "",
+      country: e.address?.country ?? "",
+      roleName: e.role?.name ?? "",
+      seniorityLevel: e.role?.seniorityLevel ?? "",
+      department: e.role?.department ?? "",
+      managerId: e.manager?.id.toString() ?? "",
+      employmentType: e.employmentType,
+      startDate: e.startDate,
+      lastDate: e.lastDate ?? "",
+      isCurrentlyEmployed: e.isCurrentlyEmployed ?? true,
+    };
+  };
   const {
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(employeeSchema),
+    values: employee ? mapDefaultValues(employee) : undefined,
     defaultValues: {
       isCurrentlyEmployed: true,
     },
@@ -62,19 +97,37 @@ export default function EmployeeForm({
 
   useEffect(() => {
     getEmployeeFormEnums()
-      .then(setFormOptions)
+      .then((data: FormOptions) => {
+        const enums = Object.fromEntries(
+          Object.entries(data).map(([key, items]) => [
+            key,
+            items.map((item: FormOption) => ({
+              ...item,
+              value: item.label,
+            })),
+          ]),
+        ) as FormOptions;
+        setFormOptions(enums);
+      })
       .catch(() => console.error("Issue with fetching enums"));
   }, []);
 
+  useEffect(() => {
+    if (employee && formOptions.pronouns.length > 0) {
+      reset(mapDefaultValues(employee));
+    }
+  }, [employee, formOptions, reset]);
+
   const onSubmit: SubmitHandler<FormValues> = (d): void => {
-    createAddress(d).then((a) => {
-      const formData = {
-        ...d,
-        roleId: getSelectedRoleId(d),
-        addressId: a.id,
-      };
+    const formData = {
+      ...d,
+      roleId: getSelectedRoleId(d),
+    };
+    if (employee) {
+      handlePageSubmit(formData, employee.id, employee.address?.id);
+    } else {
       handlePageSubmit(formData);
-    });
+    }
   };
 
   const employeeList = employees.map((e) => {
@@ -224,7 +277,6 @@ export default function EmployeeForm({
           id="seniorityLevel"
           label="Seniority"
           colSpan="col-span-2 md:col-span-1"
-          // options={roleToUniqueList(filteredRoles, "seniorityLevel")}
           options={getUniqueOptions("seniorityLevel")}
           required
           registration={register("seniorityLevel")}

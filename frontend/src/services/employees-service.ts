@@ -54,6 +54,27 @@ export const createEmployee = async (
   return response.json();
 };
 
+export const updateEmployee = async (
+  id: number,
+  formData: FormValues,
+): Promise<Employee> => {
+  const response = await fetch(`${API_URL}/employees/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(formData),
+  });
+
+  if (!response.ok) {
+    const errorResponseBody = await response.json().catch(() => null);
+    throw new FetchError(
+      errorResponseBody.message ?? "Failed to update employee",
+    );
+  }
+  return response.json();
+};
+
 export const getEmployeeFormEnums = async () => {
   const response = await fetch(`${API_URL}/employees/enums`);
   if (!response.ok) {
