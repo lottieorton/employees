@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import type { Employee } from "../../interfaces/Employee";
+import { useDeleteEmployee } from "../../hooks/useEmployees";
 
 interface EmployeeProps {
   employee: Employee;
@@ -9,6 +10,16 @@ interface EmployeeProps {
 export default function EmployeeCard({ employee, bgColor }: EmployeeProps) {
   const btnBase =
     "font-medium text-base hover:underline transition-colors cursor-pointer 3xl:text-2xl";
+
+  const {
+    mutate: deleteEmployee,
+    isError: isDeleteEmployeeError,
+    error: deleteEmployeeError,
+  } = useDeleteEmployee();
+
+  const handleClick = () => {
+    deleteEmployee({ id: employee.id, addressId: employee.address?.id });
+  };
 
   return (
     <article
@@ -36,7 +47,10 @@ export default function EmployeeCard({ employee, bgColor }: EmployeeProps) {
           >
             View
           </Link>
-          <button className={`text-red-500 ${btnBase} hover:text-rose-600`}>
+          <button
+            className={`text-red-500 ${btnBase} hover:text-rose-600`}
+            onClick={handleClick}
+          >
             Delete
           </button>
         </div>

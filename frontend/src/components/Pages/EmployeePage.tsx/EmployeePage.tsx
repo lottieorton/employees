@@ -2,7 +2,11 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import EmployeeForm from "../../EmployeeForm/EmployeeForm";
 import EmployeeDetails from "../../EmployeeDetails/EmployeeDetails";
-import { useEmployee, useUpdateEmployee } from "../../../hooks/useEmployees";
+import {
+  useDeleteEmployee,
+  useEmployee,
+  useUpdateEmployee,
+} from "../../../hooks/useEmployees";
 import LoadingBanner from "../../LoadingBanner/LoadingBanner";
 import ErrorBanner from "../../ErrorBanner/ErrorBanner";
 import type { FormValues } from "../../../schemas/employeeSchema";
@@ -10,6 +14,7 @@ import { updateAddress } from "../../../services/addresses-service";
 
 export default function EmployeePage() {
   const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -17,12 +22,19 @@ export default function EmployeePage() {
     data: employee,
     isLoading,
     isError: isFetchEmployeeError,
-  } = useEmployee(id);
+  } = useEmployee(id, {
+    enabled: Boolean(id) && !isDeleting,
+  });
   const {
     mutate: updateEmployee,
     isError: isUpdateEmployeeError,
-    error,
+    error: updateEmployeeError,
   } = useUpdateEmployee();
+  const {
+    mutate: deleteEmployee,
+    isError: isDeleteEmployeeError,
+    error: deleteEmployeeError,
+  } = useDeleteEmployee();
 
   const toggleEditing = () => {
     setIsEditing((prev) => !prev);
@@ -48,9 +60,20 @@ export default function EmployeePage() {
     toggleEditing();
   };
 
-  const handleCancelClick = () => {
-    // delete user
-    navigate("/");
+  const handleDeleteClick = () => {
+    if (!employee) return;
+    setIsDeleting(true);
+    deleteEmployee(
+      { id: employee.id, addressId: employee.address?.id },
+      {
+        onSuccess: () => {
+          navigate("/");
+        },
+        onError: () => {
+          setIsDeleting(false);
+        },
+      },
+    );
   };
 
   if (isLoading) {
@@ -118,7 +141,7 @@ export default function EmployeePage() {
       {isEditing ? (
         <EmployeeForm
           handlePageSubmit={handleSubmit}
-          handleWarningClick={handleCancelClick}
+          handleWarningClick={handleDeleteClick}
           submitBtnText="Save Changes"
           warningBtnText="Delete Employee"
           employee={employee}

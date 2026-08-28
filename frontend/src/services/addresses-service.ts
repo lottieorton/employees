@@ -42,3 +42,17 @@ export const updateAddress = async (
   }
   return response.json();
 };
+
+export const deleteAddress = async (id: number): Promise<boolean> => {
+  const response = await fetch(`${API_URL}/addresses/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const errorResponseBody = await response.json().catch(() => null);
+    throw new FetchError(
+      errorResponseBody.message ?? "Failed to delete address",
+    );
+  }
+  return true;
+};

@@ -18,7 +18,7 @@ interface EmployeeFormProps {
     id?: number,
     addressId?: number,
   ) => void;
-  handleWarningClick: () => void;
+  handleWarningClick: (id?: number, addressId?: number) => void;
   submitBtnText: string;
   warningBtnText: string;
   hasEmail?: boolean;
@@ -128,6 +128,11 @@ export default function EmployeeForm({
     } else {
       handlePageSubmit(formData);
     }
+  };
+
+  const onClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
+    e.preventDefault();
+    handleWarningClick();
   };
 
   const employeeList = employees.map((e) => {
@@ -345,7 +350,7 @@ export default function EmployeeForm({
           <Button size="lg" type="primary">
             {submitBtnText}
           </Button>
-          <Button size="lg" type="danger" handleClick={handleWarningClick}>
+          <Button size="lg" type="danger" handleClick={onClick}>
             {warningBtnText}
           </Button>
         </div>

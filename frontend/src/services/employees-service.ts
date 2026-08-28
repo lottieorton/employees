@@ -16,11 +16,11 @@ export const getAllEmployees = async (
         .map(([key, value]) => `${key}=${value}`)
         .join("&");
   }
-  const resposne = await fetch(`${API_URL}/employees${queryString}`);
-  if (!resposne.ok) {
+  const response = await fetch(`${API_URL}/employees${queryString}`);
+  if (!response.ok) {
     throw new FetchError("Failed to fetch employees");
   }
-  return resposne.json();
+  return response.json();
 };
 
 export const getEmployeeById = async (id?: string): Promise<Employee> => {
@@ -73,6 +73,20 @@ export const updateEmployee = async (
     );
   }
   return response.json();
+};
+
+export const deleteEmployee = async (id: number): Promise<boolean> => {
+  const response = await fetch(`${API_URL}/employees/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const errorResponseBody = await response.json().catch(() => null);
+    throw new FetchError(
+      errorResponseBody.message ?? "Failed to delete employee",
+    );
+  }
+  return true;
 };
 
 export const getEmployeeFormEnums = async () => {

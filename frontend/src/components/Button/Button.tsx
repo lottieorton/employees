@@ -4,7 +4,7 @@ interface ButtonProps {
   children: ReactNode;
   type?: "primary" | "danger";
   size: "sm" | "lg";
-  handleClick?: () => void;
+  handleClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export default function Button({
