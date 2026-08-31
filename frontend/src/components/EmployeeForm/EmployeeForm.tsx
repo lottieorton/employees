@@ -6,37 +6,12 @@ import RadioGroupField from "../fields/RadioGroupField/RadioGroupField";
 import SelectField from "../fields/SelectField/SelectField";
 import { employeeSchema, type FormValues } from "../../schemas/employeeSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
-import { getEmployeeFormEnums } from "../../services/employees-service";
-import { useEmployees } from "../../hooks/useEmployees";
-import { useRoleFilters } from "../../hooks/useRoleFilters";
-import type { Employee } from "../../interfaces/Employee";
+import { useEffect } from "react";
+import { useEmployeeFormOptions } from "../../hooks/useEmployeeFormOptions";
 import ErrorBanner from "../ErrorBanner/ErrorBanner";
 import LoadingBanner from "../LoadingBanner/LoadingBanner";
-
-interface EmployeeFormProps {
-  handlePageSubmit: (
-    formData: FormValues,
-    id?: number,
-    addressId?: number,
-  ) => void;
-  handleWarningClick: (id?: number, addressId?: number) => void;
-  submitBtnText: string;
-  warningBtnText: string;
-  hasEmail?: boolean;
-  employee?: Employee;
-}
-
-export interface FormOption {
-  label: string;
-  value: string | number;
-}
-
-interface FormOptions {
-  pronouns: FormOption[];
-  workSetup: FormOption[];
-  employmentType: FormOption[];
-}
+import type { EmployeeFormProps } from "../../interfaces/formInterfaces";
+import { mapDefaultValues } from "../../utils/employeeForm";
 
 export default function EmployeeForm({
   handlePageSubmit,
@@ -46,48 +21,6 @@ export default function EmployeeForm({
   hasEmail = true,
   employee,
 }: EmployeeFormProps) {
-  const [formOptions, setFormOptions] = useState<FormOptions>({
-    pronouns: [],
-    workSetup: [],
-    employmentType: [],
-  });
-  const [isFormEnumsError, setIsFormEnumsError] = useState<boolean>(false);
-  const [isFormEnumsLoading, setIsFormEnumsLoading] = useState<boolean>(false);
-
-  const {
-    data: employees = [],
-    isFetching: isEmployeesFetching,
-    isError: isEmployeesError,
-  } = useEmployees();
-
-  const mapDefaultValues = (e: Employee) => {
-    return {
-      pronouns: e.pronouns,
-      firstName: e.firstName,
-      lastName: e.lastName,
-      workSetup: e.workSetup,
-      middleName: e.middleName ?? "",
-      preferredName: e.preferredName ?? "",
-      emailAddress: e.emailAddress,
-      phoneNumber: e.phoneNumber,
-      unitNumber: e.address?.unitNumber ?? "",
-      streetAddress: e.address?.streetAddress ?? "",
-      addressLine2: e.address?.addressLine2 ?? "",
-      city: e.address?.city ?? "",
-      stateProvinceRegion: e.address?.stateProvinceRegion ?? "",
-      postalCode: e.address?.postalCode ?? "",
-      country: e.address?.country ?? "",
-      roleName: e.role?.name ?? "",
-      seniorityLevel: e.role?.seniorityLevel ?? "",
-      department: e.role?.department ?? "",
-      managerId: e.manager?.id.toString() ?? "",
-      employmentType: e.employmentType,
-      startDate: e.startDate,
-      lastDate: e.lastDate ?? "",
-      isCurrentlyEmployed: e.isCurrentlyEmployed ?? true,
-    };
-  };
-
   const {
     register,
     handleSubmit,
@@ -102,34 +35,20 @@ export default function EmployeeForm({
     },
   });
 
-  const { getUniqueOptions, getSelectedRoleId, isRolesLoading, isRolesError } =
-    useRoleFilters(control);
+  const {
+    formOptions,
+    managerOptions,
+    getUniqueOptions,
+    getSelectedRoleId,
+    isLoading,
+    hasError,
+  } = useEmployeeFormOptions(control, employee);
 
   useEffect(() => {
-    setIsFormEnumsLoading(true);
-    setIsFormEnumsError(false);
-    getEmployeeFormEnums()
-      .then((data: FormOptions) => {
-        const enums = Object.fromEntries(
-          Object.entries(data).map(([key, items]) => [
-            key,
-            items.map((item: FormOption) => ({
-              ...item,
-              value: item.label,
-            })),
-          ]),
-        ) as FormOptions;
-        setFormOptions(enums);
-      })
-      .catch(() => setIsFormEnumsError(true))
-      .finally(() => setIsFormEnumsLoading(false));
-  }, []);
-
-  useEffect(() => {
-    if (employee && formOptions.pronouns.length > 0 && !isRolesLoading) {
+    if (employee && formOptions.pronouns.length > 0 && !isLoading) {
       reset(mapDefaultValues(employee));
     }
-  }, [employee, formOptions, reset, isRolesLoading]);
+  }, [employee, formOptions, reset, isLoading]);
 
   const onSubmit: SubmitHandler<FormValues> = (d): void => {
     const formData = {
@@ -148,37 +67,26 @@ export default function EmployeeForm({
     handleWarningClick();
   };
 
-  const employeeList = employees.map((e) => {
-    return {
-      value: e.id,
-      label: `${e.firstName} ${e.lastName} (${e.role?.name})`,
-    };
-  });
-
-  const isLoading = isEmployeesFetching || isRolesLoading || isFormEnumsLoading;
-  const hasError = isEmployeesError || isRolesError || isFormEnumsError;
+  const baseHeaderStyle =
+    "text-base text-zinc-950 font-semibold col-span-full pb-2 3xl:text-2xl";
+  const sectionSeparatorStyle =
+    "col-span-2 my-6 border-t border-zinc-500 border";
 
   return (
-    <section className="w-full flex flex-col gap-5">
+    <section className="w-full flex flex-col gap-5 py-6">
       {hasError && (
-        <div className="pt-6">
-          <ErrorBanner>
-            Unable to fetch some form data. Please try refreshing the page.
-          </ErrorBanner>
-        </div>
+        <ErrorBanner>
+          Unable to fetch some form data. Please try refreshing the page.
+        </ErrorBanner>
       )}
       {isLoading && !hasError && (
-        <div className="pt-6">
-          <LoadingBanner>Loading form details</LoadingBanner>
-        </div>
+        <LoadingBanner>Loading form details</LoadingBanner>
       )}
       <form
         className="grid grid-cols-2 gap-3 w-full"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <h3 className="text-base text-zinc-950 font-semibold col-span-full pt-6 pb-2 3xl:text-2xl">
-          Personal Information
-        </h3>
+        <h3 className={baseHeaderStyle}>Personal Information</h3>
         <SelectField
           id="pronouns"
           label="Pronouns"
@@ -218,9 +126,8 @@ export default function EmployeeForm({
           registration={register("preferredName")}
           error={errors.preferredName?.message}
         />
-        <h3 className="text-base text-zinc-950 font-semibold col-span-full pt-6 pb-2 3xl:text-2xl">
-          Contact Information
-        </h3>
+        <div className={sectionSeparatorStyle} />
+        <h3 className={baseHeaderStyle}>Contact Information</h3>
         {hasEmail && (
           <InputField
             id="emailAddress"
@@ -293,10 +200,8 @@ export default function EmployeeForm({
           registration={register("country")}
           error={errors.country?.message}
         />
-
-        <h3 className="text-base text-zinc-950 font-semibold col-span-full pt-6 pb-2 3xl:text-2xl">
-          Employment Information
-        </h3>
+        <div className={sectionSeparatorStyle} />
+        <h3 className={baseHeaderStyle}>Employment Information</h3>
         <SelectField
           id="roleName"
           label="Role Name"
@@ -328,7 +233,7 @@ export default function EmployeeForm({
           id="manager"
           label="Manager"
           colSpan="col-span-2 md:col-span-1"
-          options={employeeList}
+          options={managerOptions}
           registration={register("managerId")}
           error={errors.managerId?.message}
         />

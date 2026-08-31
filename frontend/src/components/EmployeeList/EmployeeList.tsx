@@ -6,13 +6,18 @@ import LoadingBanner from "../LoadingBanner/LoadingBanner";
 
 interface EmployeeListProps {
   searchTerm: string;
+  searchBy: string;
 }
 
-export default function EmployeeList({ searchTerm }: EmployeeListProps) {
+export default function EmployeeList({
+  searchTerm,
+  searchBy,
+}: EmployeeListProps) {
   const searchQuery: SearchQuery = {};
 
   if (searchTerm.trim() !== "") {
-    searchQuery.search = searchTerm;
+    searchQuery[searchBy] = searchTerm;
+    console.log(searchQuery);
   }
   const {
     data: employees = [],

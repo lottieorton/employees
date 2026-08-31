@@ -1,3 +1,1 @@
-export interface SearchQuery {
-  search?: string;
-}
+export type SearchQuery = Record<string, string>;

@@ -135,15 +135,12 @@ public class EmployeeService {
     private String createUniqueEmail(String firstName, String lastName) {
         String cleanFirst = firstName.toLowerCase().replaceAll("[^a-z0-9]", "");
         String cleanLast = lastName.toLowerCase().replaceAll("[^a-z0-9]", "");
-        
-        String emailBase = cleanFirst + "." + cleanLast;
-        String domain = "@mycompany.com";
 
-        String candidateEmail = emailBase + domain;
+        String candidateEmail = String.format("%s.%s@mycompany.com", cleanFirst, cleanLast);
         int counter = 1;
 
         while(this.repo.existsByEmailAddress(candidateEmail)) {
-            candidateEmail = emailBase + counter + domain;
+            candidateEmail = String.format("%s.%s%s@mycompany.com", cleanFirst, cleanLast, counter);
             counter++;
         }
 
