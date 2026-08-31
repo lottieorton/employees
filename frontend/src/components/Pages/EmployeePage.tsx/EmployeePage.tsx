@@ -11,10 +11,13 @@ import LoadingBanner from "../../LoadingBanner/LoadingBanner";
 import ErrorBanner from "../../ErrorBanner/ErrorBanner";
 import type { FormValues } from "../../../schemas/employeeSchema";
 import { updateAddress } from "../../../services/addresses-service";
+import { toast } from "react-toastify";
 
 export default function EmployeePage() {
-  const [isEditing, setIsEditing] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -25,39 +28,46 @@ export default function EmployeePage() {
   } = useEmployee(id, {
     enabled: Boolean(id) && !isDeleting,
   });
-  const {
-    mutate: updateEmployee,
-    isError: isUpdateEmployeeError,
-    error: updateEmployeeError,
-  } = useUpdateEmployee();
-  const {
-    mutate: deleteEmployee,
-    isError: isDeleteEmployeeError,
-    error: deleteEmployeeError,
-  } = useDeleteEmployee();
+  const { mutateAsync: updateEmployee } = useUpdateEmployee();
+  const { mutate: deleteEmployee } = useDeleteEmployee();
 
   const toggleEditing = () => {
     setIsEditing((prev) => !prev);
   };
 
-  const handleSubmit = (
+  const handleSubmit = async (
     formData: FormValues,
     id?: number,
     addressId?: number,
   ) => {
     if (!id || !addressId) {
-      console.log("No employee id or no address id");
+      toast.error(
+        "Oops something went wrong with trying to update this employee",
+      );
       return;
     }
-    updateAddress(addressId, formData).then(() => {
+    setIsSaving(true);
+    try {
+      await updateAddress(addressId, formData);
       const payload = {
         ...formData,
         addressId,
       };
-      updateEmployee({ id, formData: payload });
-    });
-
-    toggleEditing();
+      await updateEmployee({ id, formData: payload });
+      toggleEditing();
+    } catch (err) {
+      const customMessage =
+        "This email address is already in use. Please use another";
+      const isDuplicateEmail =
+        err instanceof Error && err.message.includes(customMessage);
+      toast.error(
+        isDuplicateEmail
+          ? customMessage
+          : "Oops something went wrong with trying to update this employee",
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDeleteClick = () => {
@@ -69,7 +79,13 @@ export default function EmployeePage() {
         onSuccess: () => {
           navigate("/");
         },
-        onError: () => {
+        onError: (err) => {
+          const errorMsg =
+            err.message ===
+            "Cannot delete this employee as they are currently a manager of other employee(s)"
+              ? err.message
+              : "Oops, something went wrong when deleting this employee.";
+          toast.error(errorMsg);
           setIsDeleting(false);
         },
       },
@@ -130,7 +146,7 @@ export default function EmployeePage() {
           {isEditing ? "View mode" : "Edit"}
         </button>
       </div>
-      <div className="flex flex-col align-middle gap-1">
+      <div className="flex flex-col gap-1">
         <h1 className="text-2xl text-zinc-950 font-bold text-center 3xl:text-4xl">
           {fullName}
         </h1>
@@ -142,8 +158,8 @@ export default function EmployeePage() {
         <EmployeeForm
           handlePageSubmit={handleSubmit}
           handleWarningClick={handleDeleteClick}
-          submitBtnText="Save Changes"
-          warningBtnText="Delete Employee"
+          submitBtnText={isSaving ? "Saving... " : "Save Changes"}
+          warningBtnText={isDeleting ? "Deleting... " : "Delete Employee"}
           employee={employee}
         />
       ) : (

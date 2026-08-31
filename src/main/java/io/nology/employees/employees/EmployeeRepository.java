@@ -7,4 +7,8 @@ import io.nology.employees.employees.entities.Employee;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSpecificationExecutor<Employee> {
     boolean existsByEmailAddress(String emailAddress);
+
+    boolean existsByEmailAddressAndIdNot(String emailAddress, Long id);
+
+    boolean existsByManagerId(Long id);
 }

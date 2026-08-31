@@ -32,6 +32,16 @@ export default function EmployeeList({ searchTerm }: EmployeeListProps) {
     return <LoadingBanner>Loading employees...</LoadingBanner>;
   }
 
+  if (employees.length === 0) {
+    return (
+      <ErrorBanner>
+        {searchTerm.trim() !== ""
+          ? "Oops there are no employees for this search. Please update it."
+          : "No employees exist. Begin creating some now."}
+      </ErrorBanner>
+    );
+  }
+
   return (
     <section className="">
       {employees.map((emp, index) => {

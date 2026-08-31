@@ -1,20 +1,26 @@
 import { useEffect, useState } from "react";
-import type { Role } from "../interfaces/Employee";
+import type { Role } from "../interfaces/Role";
 import { useWatch, type Control } from "react-hook-form";
 import type { FormValues } from "../schemas/employeeSchema";
 import { getAllRoles } from "../services/roles-service";
 
 export function useRoleFilters(control: Control<FormValues>) {
   const [roles, setRoles] = useState<Role[]>([]);
+  const [isRolesLoading, setIsRolesLoading] = useState<boolean>(false);
+  const [isRolesError, setIsRolesError] = useState<boolean>(false);
 
   const selectedRoleName = useWatch({ control, name: "roleName" });
   const selectedSeniority = useWatch({ control, name: "seniorityLevel" });
   const selectedDepartment = useWatch({ control, name: "department" });
 
   useEffect(() => {
+    setIsRolesLoading(true);
+    setIsRolesError(false);
+
     getAllRoles()
       .then(setRoles)
-      .catch(() => console.error("Issue fetching roles"));
+      .catch(() => setIsRolesError(true))
+      .finally(() => setIsRolesLoading(false));
   }, []);
 
   const getFilteredRolesExcluding = (excludeField?: keyof Role) => {
@@ -62,5 +68,5 @@ export function useRoleFilters(control: Control<FormValues>) {
     )?.id;
   };
 
-  return { getUniqueOptions, getSelectedRoleId };
+  return { getUniqueOptions, getSelectedRoleId, isRolesLoading, isRolesError };
 }

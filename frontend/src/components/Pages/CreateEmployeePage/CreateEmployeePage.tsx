@@ -3,21 +3,30 @@ import EmployeeForm from "../../EmployeeForm/EmployeeForm";
 import type { FormValues } from "../../../schemas/employeeSchema";
 import { useCreateEmployee } from "../../../hooks/useEmployees";
 import { createAddress } from "../../../services/addresses-service";
+import { toast } from "react-toastify";
+import { useState } from "react";
 
 export default function CreateEmployeePage() {
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const { mutate: createEmployee, isError, error } = useCreateEmployee();
+  const { mutateAsync: createEmployee } = useCreateEmployee();
 
-  const handleSubmit = (formData: FormValues) => {
-    createAddress(formData).then((a) => {
+  const handleSubmit = async (formData: FormValues) => {
+    setIsSubmitting(true);
+    try {
+      const address = await createAddress(formData);
       const employeeFormData = {
         ...formData,
-        addressId: a.id,
+        addressId: address.id,
       };
-      createEmployee(employeeFormData);
-    });
-    navigate("/");
+      await createEmployee(employeeFormData);
+      navigate("/");
+    } catch (err) {
+      toast.error("Oops, something went wrong when creating this employee");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancelClick = () => {
@@ -32,7 +41,7 @@ export default function CreateEmployeePage() {
       >
         ← Back to Team
       </Link>
-      <div className="flex flex-col align-middle gap-1">
+      <div className="flex flex-col gap-1">
         <h1 className="text-2xl text-zinc-950 font-bold text-center 3xl:text-4xl">
           Create New Employee
         </h1>
@@ -40,7 +49,7 @@ export default function CreateEmployeePage() {
       <EmployeeForm
         handlePageSubmit={handleSubmit}
         handleWarningClick={handleCancelClick}
-        submitBtnText="Create Employee"
+        submitBtnText={isSubmitting ? "Creating..." : "Create Employee"}
         warningBtnText="Cancel"
         hasEmail={false}
       />

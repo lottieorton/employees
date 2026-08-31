@@ -843,7 +843,7 @@ public class EmployeeEndToEnd {
     }
 
     @Test
-    public void updateEmployeeById_WhenEmailAddressAlreadyInUse_ReturnsBadRequest() {
+    public void updateEmployeeById_WhenEmailAddressAlreadyInUse_ReturnsUnprocessableContent() {
         createAndSaveRole("Senior Software Developer", SeniorityLevel.SENIOR, Department.ENGINEERING);
         Employee employee1 = createAlex(null);
         employee1.setEmailAddress("sarah.jenkins@example.com");
@@ -860,8 +860,9 @@ public class EmployeeEndToEnd {
         given().contentType(ContentType.JSON).body(data)
         .when().patch("/employees/" + employeeId)
         // assert
-        .then().statusCode(HttpStatus.BAD_REQUEST.value())
-        .body("error", equalTo("Bad Request"))
+        .then().statusCode(HttpStatus.UNPROCESSABLE_CONTENT.value())
+        .body("error", equalTo("Unprocessable Content"))
+        .body("message", equalTo("This email address is already in use. Please use another"))
         .body(matchesJsonSchemaInClasspath("schemas/api-error-schema.json")); 
     }
 
@@ -909,8 +910,9 @@ public class EmployeeEndToEnd {
         //act
         given().when().delete("/employees/" + managerId)
         // assert
-        .then().statusCode(HttpStatus.BAD_REQUEST.value())
-        .body("error", equalTo("Bad Request"))
+        .then().statusCode(HttpStatus.UNPROCESSABLE_CONTENT.value())
+        .body("error", equalTo("Unprocessable Content"))
+        .body("message", equalTo("Cannot delete this employee as they are currently a manager of other employee(s)"))
         .body(matchesJsonSchemaInClasspath("schemas/api-error-schema.json"));
     }    
 

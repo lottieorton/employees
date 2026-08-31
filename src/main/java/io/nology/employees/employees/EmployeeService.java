@@ -77,6 +77,9 @@ public class EmployeeService {
         if(result.isEmpty()) {
             return result;
         }
+        if(this.repo.existsByEmailAddressAndIdNot(data.getEmailAddress(), id)) {
+            throw new UnprocessableContentException("This email address is already in use. Please use another");
+        }
         Employee foundEmployee = result.get();
         
         LocalDate newStartDate = data.getStartDate() != null ? data.getStartDate() : foundEmployee.getStartDate();
@@ -105,6 +108,10 @@ public class EmployeeService {
         Optional<Employee> result = this.findById(id);
         if(result.isEmpty()) {
             return false;
+        }
+        boolean isManager = this.repo.existsByManagerId(id);
+        if(isManager) {
+            throw new UnprocessableContentException("Cannot delete this employee as they are currently a manager of other employee(s)");
         }
         this.repo.delete(result.get());
         return true;

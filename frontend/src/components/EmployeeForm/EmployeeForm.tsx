@@ -11,6 +11,8 @@ import { getEmployeeFormEnums } from "../../services/employees-service";
 import { useEmployees } from "../../hooks/useEmployees";
 import { useRoleFilters } from "../../hooks/useRoleFilters";
 import type { Employee } from "../../interfaces/Employee";
+import ErrorBanner from "../ErrorBanner/ErrorBanner";
+import LoadingBanner from "../LoadingBanner/LoadingBanner";
 
 interface EmployeeFormProps {
   handlePageSubmit: (
@@ -49,8 +51,14 @@ export default function EmployeeForm({
     workSetup: [],
     employmentType: [],
   });
+  const [isFormEnumsError, setIsFormEnumsError] = useState<boolean>(false);
+  const [isFormEnumsLoading, setIsFormEnumsLoading] = useState<boolean>(false);
 
-  const { data: employees = [], isLoading, isError } = useEmployees();
+  const {
+    data: employees = [],
+    isFetching: isEmployeesFetching,
+    isError: isEmployeesError,
+  } = useEmployees();
 
   const mapDefaultValues = (e: Employee) => {
     return {
@@ -79,6 +87,7 @@ export default function EmployeeForm({
       isCurrentlyEmployed: e.isCurrentlyEmployed ?? true,
     };
   };
+
   const {
     register,
     handleSubmit,
@@ -93,9 +102,12 @@ export default function EmployeeForm({
     },
   });
 
-  const { getUniqueOptions, getSelectedRoleId } = useRoleFilters(control);
+  const { getUniqueOptions, getSelectedRoleId, isRolesLoading, isRolesError } =
+    useRoleFilters(control);
 
   useEffect(() => {
+    setIsFormEnumsLoading(true);
+    setIsFormEnumsError(false);
     getEmployeeFormEnums()
       .then((data: FormOptions) => {
         const enums = Object.fromEntries(
@@ -109,14 +121,15 @@ export default function EmployeeForm({
         ) as FormOptions;
         setFormOptions(enums);
       })
-      .catch(() => console.error("Issue with fetching enums"));
+      .catch(() => setIsFormEnumsError(true))
+      .finally(() => setIsFormEnumsLoading(false));
   }, []);
 
   useEffect(() => {
-    if (employee && formOptions.pronouns.length > 0) {
+    if (employee && formOptions.pronouns.length > 0 && !isRolesLoading) {
       reset(mapDefaultValues(employee));
     }
-  }, [employee, formOptions, reset]);
+  }, [employee, formOptions, reset, isRolesLoading]);
 
   const onSubmit: SubmitHandler<FormValues> = (d): void => {
     const formData = {
@@ -142,8 +155,23 @@ export default function EmployeeForm({
     };
   });
 
+  const isLoading = isEmployeesFetching || isRolesLoading || isFormEnumsLoading;
+  const hasError = isEmployeesError || isRolesError || isFormEnumsError;
+
   return (
     <section className="w-full flex flex-col gap-5">
+      {hasError && (
+        <div className="pt-6">
+          <ErrorBanner>
+            Unable to fetch some form data. Please try refreshing the page.
+          </ErrorBanner>
+        </div>
+      )}
+      {isLoading && !hasError && (
+        <div className="pt-6">
+          <LoadingBanner>Loading form details</LoadingBanner>
+        </div>
+      )}
       <form
         className="grid grid-cols-2 gap-3 w-full"
         onSubmit={handleSubmit(onSubmit)}
