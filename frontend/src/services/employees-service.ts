@@ -3,7 +3,7 @@ import type { Employee } from "../interfaces/Employee";
 import type { SearchQuery } from "../interfaces/SearchQuery";
 import type { FormValues } from "../schemas/employeeSchema";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export const getAllEmployees = async (
   searchQuery?: SearchQuery,
