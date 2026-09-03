@@ -240,6 +240,15 @@ SPRING_PROFILE=dev
 - Implemented specific field search bar functionality
 - Refactored employee form and styling
 
+**02/09/26:** React Component testing
+
+- Added Vitest configuration
+- Implemented many React unit testing suites for components
+
+**03/09/2026:** React Unit Testing Contnued
+
+- Implemented the remaining React unit testing suites
+
 ---
 
 ## What did you struggle with?
