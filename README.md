@@ -11,7 +11,7 @@
 
 <p align="center">
 <img
-src="./docs/images/HomePage.png"
+src="./docs/images/Homepage.png"
 alt="Employee App Homepage"
 width= "1000px"
 />
