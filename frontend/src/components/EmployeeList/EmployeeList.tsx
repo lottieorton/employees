@@ -1,71 +1,45 @@
 import EmployeeCard from "../EmployeeCard/EmployeeCard";
+import ErrorBanner from "../ErrorBanner/ErrorBanner";
+import LoadingBanner from "../LoadingBanner/LoadingBanner";
+import type { Employee } from "../../interfaces/Employee";
 
-export default function EmployeeList() {
-  const employees = [
-    {
-      id: "1",
-      firstName: "Sarah",
-      lastName: "Chen",
-      emailAddress: "sarah.chen@mycompany.com",
-      jobTitle: "Software Engineer",
-      department: "Engineering",
-      startDate: "2021-03-15",
-      seniority: "Senior",
-    },
-    {
-      id: "2",
-      firstName: "Marcus",
-      lastName: "Vance",
-      emailAddress: "marcus.vance@mycompany.com",
-      jobTitle: "Product Designer",
-      department: "Design",
-      startDate: "2023-08-01",
-      seniority: "Mid-Level",
-    },
-    {
-      id: "3",
-      firstName: "Elena",
-      lastName: "Rostova",
-      emailAddress: "elena.rostova@mycompany.com",
-      jobTitle: "QA Analyst",
-      department: "Quality Assurance",
-      startDate: "2024-01-10",
-      seniority: "Junior",
-    },
-    {
-      id: "4",
-      firstName: "David",
-      lastName: "Kim",
-      emailAddress: "david.kim@mycompany.com",
-      jobTitle: "DevOps Engineer",
-      department: "Infrastructure",
-      startDate: "2019-11-20",
-      seniority: "Lead",
-    },
-    {
-      id: "5",
-      firstName: "Maya",
-      lastName: "Patel",
-      emailAddress: "maya.patel@mycompany.com",
-      jobTitle: "Frontend Developer",
-      department: "Engineering",
-      startDate: "2023-05-12",
-      seniority: "Junior",
-    },
-    {
-      id: "6",
-      firstName: "James",
-      lastName: "Wilson",
-      emailAddress: "james.wilson@mycompany.com",
-      jobTitle: "Engineering Manager",
-      department: "Engineering",
-      startDate: "2018-06-04",
-      seniority: "Principal",
-    },
-  ];
+interface EmployeeListProps {
+  searchTerm: string;
+  employees: Employee[];
+  isError: boolean;
+  isLoading: boolean;
+}
+
+export default function EmployeeList({
+  searchTerm,
+  employees,
+  isError,
+  isLoading,
+}: EmployeeListProps) {
+  if (isError) {
+    return (
+      <ErrorBanner>
+        Failed to load employees. Please try refreshing the page.
+      </ErrorBanner>
+    );
+  }
+
+  if (isLoading) {
+    return <LoadingBanner>Loading employees...</LoadingBanner>;
+  }
+
+  if (employees.length === 0) {
+    return (
+      <ErrorBanner>
+        {searchTerm.trim() !== ""
+          ? "Oops there are no employees for this search. Please update it."
+          : "No employees exist. Begin creating some now."}
+      </ErrorBanner>
+    );
+  }
 
   return (
-    <section className="">
+    <section>
       {employees.map((emp, index) => {
         return (
           <div key={emp.id}>

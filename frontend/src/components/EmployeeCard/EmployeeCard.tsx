@@ -1,19 +1,36 @@
+import { Link } from "react-router-dom";
+import type { Employee } from "../../interfaces/Employee";
+import { useDeleteEmployee } from "../../hooks/useEmployees";
+import { toast } from "react-toastify";
+
 interface EmployeeProps {
-  employee: {
-    firstName: string;
-    lastName: string;
-    emailAddress: string;
-    jobTitle: string;
-    department: string;
-    startDate: string;
-    seniority: string;
-  };
+  employee: Employee;
   bgColor: string;
 }
 
 export default function EmployeeCard({ employee, bgColor }: EmployeeProps) {
   const btnBase =
-    "font-medium text-base hover:underline transition-colors cursor-pointer";
+    "font-medium text-base hover:underline transition-colors cursor-pointer 3xl:text-2xl";
+
+  const { mutate: deleteEmployee, isPending: isDeletePending } =
+    useDeleteEmployee();
+
+  const handleClick = () => {
+    deleteEmployee(
+      { id: employee.id, addressId: employee.address?.id },
+      {
+        onError: (err) => {
+          const errorMsg =
+            err.message ===
+            "Cannot delete this employee as they are currently a manager of other employee(s)"
+              ? err.message
+              : "Oops, something went wrong when deleting this employee.";
+
+          toast.error(errorMsg);
+        },
+      },
+    );
+  };
 
   return (
     <article
@@ -21,20 +38,38 @@ export default function EmployeeCard({ employee, bgColor }: EmployeeProps) {
     >
       <div className="flex flex-col gap-2">
         <div className="flex flex-col">
-          <h3 className="text-base text-zinc-950 font-semibold">{`${employee.firstName} ${employee.lastName}`}</h3>
-          <p className="text-sm text-zinc-500">{employee.jobTitle}</p>
+          <h3 className="text-base text-zinc-950 font-semibold 3xl:text-2xl">{`${employee.firstName} ${employee.lastName}`}</h3>
+          <p className="text-sm text-zinc-500 3xl:text-xl">
+            {employee.role?.name}
+          </p>
         </div>
-        <p className="text-base text-zinc-700">{employee.emailAddress}</p>
+        <p className="text-base text-zinc-700 3xl:text-2xl">
+          {employee.emailAddress}
+        </p>
       </div>
       <div className="flex flex-col justify-between">
-        <p className="text-sm text-zinc-500">Joined {employee.startDate}</p>
+        <p className="text-sm text-zinc-500 3xl:text-xl text-right">
+          Joined {employee.startDate}
+        </p>
         <div className="flex justify-end gap-2">
-          <button
+          {isDeletePending && (
+            <div>
+              <i
+                className="fa-solid fa-spinner animate-spin text-indigo-600 text-lg"
+                aria-label="Loading spinner"
+              ></i>
+            </div>
+          )}
+          <Link
+            to={`/${employee.id}`}
             className={`text-indigo-600 ${btnBase} hover:text-indigo-800`}
           >
             View
-          </button>
-          <button className={`text-red-500 ${btnBase} hover:text-rose-600`}>
+          </Link>
+          <button
+            className={`text-red-500 ${btnBase} hover:text-rose-600`}
+            onClick={handleClick}
+          >
             Delete
           </button>
         </div>

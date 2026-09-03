@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -693,6 +694,43 @@ public class EmployeeServiceTest {
     }
 
     @Test
+    public void updateById_WhenEmailAddressAlreadyExistsInDB_ThrowsException() {
+        // arrange
+        Employee employee1 = createEmployee(
+            2L, 
+            "Sarah", 
+            "Jenkins", 
+            "Marie", 
+            "SJ", 
+            Pronouns.SHE_HER, 
+            "sarah.jenkins@example.com", 
+            "+61412345678", 
+            null, 
+            null, 
+            null, 
+            WorkSetup.ON_SITE, 
+            EmploymentType.FULL_TIME_PERMANENT, 
+            LocalDate.of(2021, 3, 15), 
+            LocalDate.of(2022, 3, 15), 
+            true
+        );
+        
+        UpdateEmployeeRequest data = new UpdateEmployeeRequest();
+        data.setFirstName("Susan");
+        data.setLastName("Summer");
+        data.setEmailAddress("sarah.jenkins@mycompany.com");
+        
+        when(this.repo.findById(2L)).thenReturn(Optional.of(employee1));
+        when(this.repo.existsByEmailAddressAndIdNot("sarah.jenkins@mycompany.com", 2L)).thenReturn(true);
+        // act
+        assertThrows(UnprocessableContentException.class, () -> this.employeeService.updateById(2L, data));
+        // assert
+        verify(this.repo).findById(2L);
+        verify(this.mapper, never()).map(data, employee1);
+        verify(this.repo, never()).saveAndFlush(any(Employee.class)); 
+    }
+
+    @Test
     public void deleteById_WhenEmployeeExists_DeletedEmployeeInDB() {
         // arrange
         Employee employee1 = createEmployee(
@@ -736,4 +774,51 @@ public class EmployeeServiceTest {
         verify(this.repo).findById(2L);
         verify(this.repo, never()).delete(any(Employee.class));
     }
+
+    @Test
+    public void deleteById_WhenEmployeeIsAManagerToOtherEmployees_ReturnsThrowsException() {
+        // arrange
+        Employee employee1 = createEmployee(
+            2L, 
+            "Sarah", 
+            "Jenkins", 
+            "Marie", 
+            "SJ", 
+            Pronouns.SHE_HER, 
+            "sarah.jenkins@mycompany.com", 
+            "+61412345678", 
+            null, 
+            null, 
+            null, 
+            WorkSetup.ON_SITE, 
+            EmploymentType.FULL_TIME_PERMANENT, 
+            LocalDate.of(2021, 3, 15), 
+            LocalDate.of(2022, 3, 15), 
+            true
+        );
+        when(this.repo.findById(2L)).thenReturn(Optional.of(employee1));
+        when(this.repo.existsByManagerId(2L)).thenReturn(true);
+        // assert
+        assertThrows(UnprocessableContentException.class, () -> this.employeeService.deleteById(2L));
+        verify(this.repo).findById(2L);
+        verify(this.repo, never()).delete(any(Employee.class));
+    }
+
+    @Test
+    public void getAllEnums_ReturnsMapOfEnums() {
+        Map<String, List<Map<String, String>>> result = this.employeeService.getAllEnums();
+        // assert
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        assertEquals(Pronouns.values().length, result.get("pronouns").size());
+        assertEquals(WorkSetup.values().length, result.get("workSetup").size());
+        assertEquals(EmploymentType.values().length, result.get("employmentType").size());
+
+        Map<String, String> firstPronoun = result.get("pronouns").get(0);
+        assertTrue(firstPronoun.containsKey("label"));
+        assertTrue(firstPronoun.containsValue("He/Him"));
+        assertTrue(firstPronoun.containsKey("value"));
+        assertTrue(firstPronoun.containsValue("HE_HIM"));
+    }
+
 }

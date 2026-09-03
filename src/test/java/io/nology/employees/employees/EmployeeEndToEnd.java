@@ -450,7 +450,7 @@ public class EmployeeEndToEnd {
         // assert
         .then().statusCode(HttpStatus.CREATED.value())
         .body("firstName", equalTo("Alex"))
-        .body("address.formattedAddress", equalTo("Palm Tree Lane, Sydney"))
+        .body("address.unitNumber", equalTo("1A"))
         .body("role.name", equalTo("Software Developer"))
         .body("manager.fullName", equalTo("Sarah Jenkins"))
         .body("emailAddress", equalTo("alex.rivera@mycompany.com"))
@@ -695,9 +695,9 @@ public class EmployeeEndToEnd {
         // assert
         .then().statusCode(HttpStatus.OK.value())
         .body("firstName", equalTo("John"))
-        .body("address.formattedAddress", equalTo("Palm Tree Lane, Sydney"))
+        .body("address.unitNumber", equalTo("1A"))
         .body("role.name", equalTo("Software Developer"))
-        .body("workSetup", equalTo("REMOTE"))
+        .body("workSetup", equalTo("Remote"))
         .body("employmentType", equalTo("Part-Time Permanent"))
         .body("manager.fullName", equalTo("Sarah Jenkins"))
         .body("emailAddress", equalTo("john.smith@mycompany.com"))
@@ -843,7 +843,7 @@ public class EmployeeEndToEnd {
     }
 
     @Test
-    public void updateEmployeeById_WhenEmailAddressAlreadyInUse_ReturnsBadRequest() {
+    public void updateEmployeeById_WhenEmailAddressAlreadyInUse_ReturnsUnprocessableContent() {
         createAndSaveRole("Senior Software Developer", SeniorityLevel.SENIOR, Department.ENGINEERING);
         Employee employee1 = createAlex(null);
         employee1.setEmailAddress("sarah.jenkins@example.com");
@@ -860,8 +860,9 @@ public class EmployeeEndToEnd {
         given().contentType(ContentType.JSON).body(data)
         .when().patch("/employees/" + employeeId)
         // assert
-        .then().statusCode(HttpStatus.BAD_REQUEST.value())
-        .body("error", equalTo("Bad Request"))
+        .then().statusCode(HttpStatus.UNPROCESSABLE_CONTENT.value())
+        .body("error", equalTo("Unprocessable Content"))
+        .body("message", equalTo("This email address is already in use. Please use another"))
         .body(matchesJsonSchemaInClasspath("schemas/api-error-schema.json")); 
     }
 
@@ -909,9 +910,29 @@ public class EmployeeEndToEnd {
         //act
         given().when().delete("/employees/" + managerId)
         // assert
-        .then().statusCode(HttpStatus.BAD_REQUEST.value())
-        .body("error", equalTo("Bad Request"))
+        .then().statusCode(HttpStatus.UNPROCESSABLE_CONTENT.value())
+        .body("error", equalTo("Unprocessable Content"))
+        .body("message", equalTo("Cannot delete this employee as they are currently a manager of other employee(s)"))
         .body(matchesJsonSchemaInClasspath("schemas/api-error-schema.json"));
     }    
 
+    @Test
+    public void getAllEmployeeEnums_ReturnOKAndMapOfEnums() {
+        // act
+        given().when().get("/employees/enums")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("$", hasKey("employmentType"))
+        .body("$", hasKey("pronouns"))
+        .body("$", hasKey("workSetup"))
+        .body("employmentType", hasSize(EmploymentType.values().length))
+        .body("pronouns", hasSize(Pronouns.values().length))
+        .body("workSetup", hasSize(WorkSetup.values().length))
+        .body("employmentType[0].label", equalTo("Full-Time Permanent"))
+        .body("employmentType[0].value", equalTo("FULL_TIME_PERMANENT"))
+        .body("pronouns[0].label", equalTo("He/Him"))
+        .body("pronouns[0].value", equalTo("HE_HIM"))
+        .body("workSetup[0].label", equalTo("Onsite"))
+        .body("workSetup[0].value", equalTo("ON_SITE"));
+    }
 }

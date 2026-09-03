@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -68,5 +69,11 @@ public class EmployeesController {
             return ResponseEntity.noContent().build();
         }
         throw new NotFoundException("Could not find employee with id " + id);
+    }
+
+    @GetMapping("/enums")
+    public ResponseEntity<Map<String, List<Map<String, String>>>> getAllEmployeeEnums() {
+        Map<String, List<Map<String, String>>> enums = this.employeeService.getAllEnums();
+        return ResponseEntity.ok(enums);
     }
 }

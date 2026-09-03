@@ -2,4 +2,5 @@
 
 @theme {
   --font-sans: "Roboto", sans-serif;
+  --breakpoint-3xl: 120rem;
 }

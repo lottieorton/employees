@@ -17,11 +17,13 @@ export function FieldWrapper({
 }: FieldWrapperProps) {
   return (
     <div className={`flex flex-col gap-1 ${colSpan}`}>
-      <label htmlFor={id} className="text-sm text-zinc-500">
+      <label htmlFor={id} className="text-sm text-zinc-500 3xl:text-xl">
         {label} {required && <span className="text-rose-500">*</span>}
       </label>
       {children}
-      {error && <span className="text-xs text-rose-500">{error}</span>}
+      {error && (
+        <span className="text-xs text-rose-500 3xl:text-lg">{error}</span>
+      )}
     </div>
   );
 }
