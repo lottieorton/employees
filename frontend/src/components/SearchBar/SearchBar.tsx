@@ -43,7 +43,10 @@ export default function SearchBar({
       onSubmit={(e) => e.preventDefault()}
     >
       <div className="bg-white border border-solid border-zinc-200 py-3 px-4 rounded-md flex flex-1 gap-1 items-center focus-within:border-indigo-600 focus-within:ring-1 focus-within:ring-indigo-600">
-        <i className="fa-solid fa-magnifying-glass text-zinc-400 text-sm 3xl:text-xl"></i>
+        <i
+          className="fa-solid fa-magnifying-glass text-zinc-400 text-sm 3xl:text-xl"
+          aria-label="Search icon"
+        ></i>
         <input
           type="text"
           className="text-zinc-600 flex-1 outline-none text-sm placeholder:text-zinc-400 bg-transparent 3xl:text-xl"

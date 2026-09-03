@@ -83,6 +83,7 @@ export default function EmployeeForm({
         <LoadingBanner>Loading form details</LoadingBanner>
       )}
       <form
+        noValidate
         className="grid grid-cols-2 gap-3 w-full"
         onSubmit={handleSubmit(onSubmit)}
       >

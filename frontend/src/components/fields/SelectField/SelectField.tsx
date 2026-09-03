@@ -1,7 +1,10 @@
 import React from "react";
-import type { FieldWrapperProps } from "../FieldWrapper/FieldWrapper";
+import {
+  FieldWrapper,
+  type FieldWrapperProps,
+} from "../FieldWrapper/FieldWrapper";
 import type { UseFormRegisterReturn } from "react-hook-form";
-import type { FormOption } from "../../EmployeeForm/EmployeeForm";
+import type { FormOption } from "../../../interfaces/formInterfaces";
 
 interface SelectFieldProps
   extends
@@ -15,17 +18,20 @@ interface SelectFieldProps
 export default function SelectField({
   id,
   label,
-  colSpan = "col-span-1",
-  required = false,
+  colSpan,
+  required,
   error,
   options,
   registration,
 }: SelectFieldProps) {
   return (
-    <div className={`flex flex-col gap-1 ${colSpan}`}>
-      <label htmlFor={id} className="text-sm text-zinc-500 3xl:text-xl">
-        {label} {required && <span className="text-rose-500">*</span>}
-      </label>
+    <FieldWrapper
+      id={id}
+      label={label}
+      colSpan={colSpan}
+      required={required}
+      error={error}
+    >
       <select
         id={id}
         {...registration}
@@ -38,9 +44,6 @@ export default function SelectField({
           </option>
         ))}
       </select>
-      {error && (
-        <span className="text-xs text-rose-500 3xl:text-lg">{error}</span>
-      )}
-    </div>
+    </FieldWrapper>
   );
 }

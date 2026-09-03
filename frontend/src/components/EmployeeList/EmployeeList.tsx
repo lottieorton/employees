@@ -1,30 +1,21 @@
 import EmployeeCard from "../EmployeeCard/EmployeeCard";
-import { useEmployees } from "../../hooks/useEmployees";
-import type { SearchQuery } from "../../interfaces/SearchQuery";
 import ErrorBanner from "../ErrorBanner/ErrorBanner";
 import LoadingBanner from "../LoadingBanner/LoadingBanner";
+import type { Employee } from "../../interfaces/Employee";
 
 interface EmployeeListProps {
   searchTerm: string;
-  searchBy: string;
+  employees: Employee[];
+  isError: boolean;
+  isLoading: boolean;
 }
 
 export default function EmployeeList({
   searchTerm,
-  searchBy,
+  employees,
+  isError,
+  isLoading,
 }: EmployeeListProps) {
-  const searchQuery: SearchQuery = {};
-
-  if (searchTerm.trim() !== "") {
-    searchQuery[searchBy] = searchTerm;
-    console.log(searchQuery);
-  }
-  const {
-    data: employees = [],
-    isLoading,
-    isError,
-  } = useEmployees(searchQuery);
-
   if (isError) {
     return (
       <ErrorBanner>
@@ -48,7 +39,7 @@ export default function EmployeeList({
   }
 
   return (
-    <section className="">
+    <section>
       {employees.map((emp, index) => {
         return (
           <div key={emp.id}>

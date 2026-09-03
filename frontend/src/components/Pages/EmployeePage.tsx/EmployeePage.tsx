@@ -143,7 +143,7 @@ export default function EmployeePage() {
           onClick={(): void => toggleEditing()}
           className="flex justify-start text-indigo-600 font-medium text-base hover:underline transition-colors cursor-pointer hover:text-indigo-800 3xl:text-2xl"
         >
-          {isEditing ? "View mode" : "Edit"}
+          {isEditing ? "View" : "Edit"}
         </button>
       </div>
       <div className="flex flex-col gap-1">
@@ -158,8 +158,8 @@ export default function EmployeePage() {
         <EmployeeForm
           handlePageSubmit={handleSubmit}
           handleWarningClick={handleDeleteClick}
-          submitBtnText={isSaving ? "Saving... " : "Save Changes"}
-          warningBtnText={isDeleting ? "Deleting... " : "Delete Employee"}
+          submitBtnText={isSaving ? "Saving..." : "Save Changes"}
+          warningBtnText={isDeleting ? "Deleting..." : "Delete Employee"}
           employee={employee}
         />
       ) : (

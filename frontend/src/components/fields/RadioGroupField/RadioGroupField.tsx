@@ -4,7 +4,7 @@ import {
   type FieldWrapperProps,
 } from "../FieldWrapper/FieldWrapper";
 import type { UseFormRegisterReturn } from "react-hook-form";
-import type { FormOption } from "../../EmployeeForm/EmployeeForm";
+import type { FormOption } from "../../../interfaces/formInterfaces";
 
 interface RadioGroupFieldProps extends Omit<FieldWrapperProps, "children"> {
   id: string;

@@ -54,7 +54,10 @@ export default function EmployeeCard({ employee, bgColor }: EmployeeProps) {
         <div className="flex justify-end gap-2">
           {isDeletePending && (
             <div>
-              <i className="fa-solid fa-spinner animate-spin text-indigo-600 text-lg"></i>
+              <i
+                className="fa-solid fa-spinner animate-spin text-indigo-600 text-lg"
+                aria-label="Loading spinner"
+              ></i>
             </div>
           )}
           <Link

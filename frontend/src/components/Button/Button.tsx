@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 interface ButtonProps {
   children: ReactNode;
   type?: "primary" | "danger";
-  size: "sm" | "lg";
+  size?: "sm" | "lg";
   handleClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
