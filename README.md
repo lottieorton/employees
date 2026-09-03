@@ -1,6 +1,7 @@
 # Full-Stack Employee Application
 
 [![Java CI with Maven](https://github.com/lottieorton/employees/actions/workflows/maven.yml/badge.svg)](https://github.com/lottieorton/employees/actions/workflows/maven.yml)
+[![Node.js CI](https://github.com/lottieorton/employees/actions/workflows/node.js.yml/badge.svg)](https://github.com/lottieorton/employees/actions/workflows/node.js.yml)
 
 **`IN PROGRESS`**
 
