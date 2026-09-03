@@ -10,11 +10,16 @@ export const getAllEmployees = async (
 ): Promise<Employee[]> => {
   let queryString = "";
   if (searchQuery) {
-    queryString +=
-      "?" +
-      Object.entries(searchQuery)
-        .map(([key, value]) => `${key}=${value}`)
-        .join("&");
+    const params = new URLSearchParams();
+    Object.entries(searchQuery).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        params.append(key, String(value));
+      }
+    });
+    const paramString = params.toString();
+    if (paramString) {
+      queryString = `?${paramString}`;
+    }
   }
   const response = await fetch(`${API_URL}/employees${queryString}`);
   if (!response.ok) {

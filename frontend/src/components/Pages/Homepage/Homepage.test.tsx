@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { useEmployees } from "../../../hooks/useEmployees";
 import type { Employee } from "../../../interfaces/Employee";
 import Homepage from "./Homepage";
@@ -234,12 +234,14 @@ describe("Homepage", () => {
     const searchBtn = screen.getByTestId("name-searchBy");
     await user.click(searchBtn);
     // assert
-    expect(useEmployees).toHaveBeenCalledTimes(2);
-    expect(useEmployees).toHaveBeenCalledWith(
-      expect.objectContaining({
-        search: "Sarah",
-      }),
-    );
+    await waitFor(() => {
+      expect(useEmployees).toHaveBeenCalledTimes(2);
+      expect(useEmployees).toHaveBeenCalledWith(
+        expect.objectContaining({
+          search: "Sarah",
+        }),
+      );
+    });
   });
 
   it("Should pass the memoized query object reference on re-render with same search query values", async () => {

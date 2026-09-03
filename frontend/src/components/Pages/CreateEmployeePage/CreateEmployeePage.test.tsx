@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { useCreateEmployee } from "../../../hooks/useEmployees";
 import CreateEmployeePage from "./CreateEmployeePage";
 import { MemoryRouter } from "react-router-dom";
@@ -219,7 +219,9 @@ describe("CreateEmployeePage", () => {
     await user.click(submitBtn);
     // assert
     expect(submitBtn).toHaveTextContent("Creating...");
-    resolveAddress({ id: 1 });
+    await act(async () => {
+      resolveAddress({ id: 1 });
+    });
   });
 
   it("Should show error message on error creating employee", async () => {
