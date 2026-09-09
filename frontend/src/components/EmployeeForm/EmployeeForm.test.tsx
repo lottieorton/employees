@@ -193,7 +193,7 @@ describe("EmployeeForm", () => {
       "sarah.jenkins@example.com",
     );
     await user.type(screen.getByLabelText("Phone Number *"), "+61412345678");
-    await user.type(screen.getByLabelText("Unit Number *"), "30");
+    await user.type(screen.getByLabelText("Unit Number"), "30");
     await user.type(screen.getByLabelText("Street Address *"), "Park Lane");
     await user.type(
       screen.getByLabelText("Address Line 2"),
@@ -295,7 +295,7 @@ describe("EmployeeForm", () => {
       "sarah.jenkins@example.com",
     );
     expect(screen.getByLabelText("Phone Number *")).toHaveValue("+61412345678");
-    expect(screen.getByLabelText("Unit Number *")).toHaveValue("30");
+    expect(screen.getByLabelText("Unit Number")).toHaveValue("30");
     expect(screen.getByLabelText("Street Address *")).toHaveValue("Park Lane");
     expect(screen.getByLabelText("Address Line 2")).toHaveValue(
       "Leicester Square",
@@ -462,9 +462,6 @@ describe("EmployeeForm", () => {
       await screen.findByText(
         "Phone number must be between 7 and 20 characters",
       ),
-    ).toBeInTheDocument();
-    expect(
-      await screen.findByText("Unit Number cannot be empty"),
     ).toBeInTheDocument();
     expect(
       await screen.findByText("Street Address cannot be empty"),

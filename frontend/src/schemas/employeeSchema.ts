@@ -30,10 +30,7 @@ export const employeeSchema = z
       .trim()
       .min(7, { message: "Phone number must be between 7 and 20 characters" })
       .max(20, "Phone number must be between 7 and 20 characters"),
-    unitNumber: z
-      .string()
-      .trim()
-      .min(1, { message: "Unit Number cannot be empty" }),
+    unitNumber: optionalString,
     streetAddress: z
       .string()
       .trim()
