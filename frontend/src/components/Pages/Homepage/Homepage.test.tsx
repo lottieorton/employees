@@ -3,6 +3,7 @@ import { useEmployees } from "../../../hooks/useEmployees";
 import type { Employee } from "../../../interfaces/Employee";
 import Homepage from "./Homepage";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter, useLocation } from "react-router-dom";
 
 vi.mock("../../../hooks/useEmployees", () => ({
   useEmployees: vi.fn(),
@@ -46,30 +47,40 @@ vi.mock("../../EmployeeList/EmployeeList", () => ({
 
 vi.mock("../../SearchBar/SearchBar", () => ({
   default: ({
+    initialSearchValue,
+    initialSearchByValue,
     handleSearch,
-    handleSearchBy,
   }: {
-    handleSearch: (s: string) => void;
-    handleSearchBy: (s: string) => void;
+    initialSearchValue: string;
+    initialSearchByValue: string;
+    handleSearch: (term: string, by: string) => void;
   }) => (
     <div data-testid="mock-searchbar">
+      <p>Initial search value: {initialSearchValue}</p>
+      <p>Initial searchBy: {initialSearchByValue}</p>
       <button
         data-testid="empty-search"
         onClick={() => {
-          handleSearchBy("");
-          handleSearch("");
+          handleSearch("", "");
         }}
       >
-        Search Sarah
+        Search all
+      </button>
+      <button
+        data-testid="general-searchBy"
+        onClick={() => {
+          handleSearch("Sarah", "search");
+        }}
+      >
+        General Search Sarah
       </button>
       <button
         data-testid="name-searchBy"
         onClick={() => {
-          handleSearchBy("search");
-          handleSearch("Sarah");
+          handleSearch("Alex", "firstName");
         }}
       >
-        Search Sarah by name
+        Search Alex name
       </button>
     </div>
   ),
@@ -147,6 +158,11 @@ describe("Homepage", () => {
     },
   ];
 
+  function LocationDisplay() {
+    const location = useLocation();
+    return <div data-testid="location-display">{location.search}</div>;
+  }
+
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -159,13 +175,21 @@ describe("Homepage", () => {
 
   it("Should pass props to children components when a list of employees is returned", () => {
     // arrange
-    render(<Homepage />);
+    render(
+      <MemoryRouter>
+        <Homepage />
+      </MemoryRouter>,
+    );
     // act
     const header = screen.getByTestId("mock-header");
     const searchTerm = screen.getByText("Search term:");
     const loading = screen.getByText("Loading: false");
     const error = screen.getByText("Error: false");
     const employees = screen.getAllByTestId("mock-employee");
+    const searchBarInitialTerm = screen.getByText("Initial search value:");
+    const searchBarInitialSearchBy = screen.getByText(
+      "Initial searchBy: search",
+    );
     // assert
     expect(header).toHaveTextContent("2 employees");
     expect(searchTerm).toBeInTheDocument();
@@ -174,6 +198,8 @@ describe("Homepage", () => {
     expect(employees).toHaveLength(2);
     expect(employees[0]).toHaveTextContent("1: Sarah");
     expect(employees[1]).toHaveTextContent("2: Alex");
+    expect(searchBarInitialTerm).toBeInTheDocument();
+    expect(searchBarInitialSearchBy).toBeInTheDocument();
   });
 
   it("Should pass error to children components when there is an error fetching employees", () => {
@@ -183,7 +209,11 @@ describe("Homepage", () => {
       isLoading: false,
       isError: true,
     } as any);
-    render(<Homepage />);
+    render(
+      <MemoryRouter>
+        <Homepage />
+      </MemoryRouter>,
+    );
     // act
     const error = screen.getByText("Error: true");
     // assert
@@ -197,7 +227,11 @@ describe("Homepage", () => {
       isLoading: true,
       isError: false,
     } as any);
-    render(<Homepage />);
+    render(
+      <MemoryRouter>
+        <Homepage />
+      </MemoryRouter>,
+    );
     // act
     const loading = screen.getByText("Loading: true");
     // assert
@@ -211,7 +245,11 @@ describe("Homepage", () => {
       isLoading: true,
       isError: false,
     } as any);
-    render(<Homepage />);
+    render(
+      <MemoryRouter>
+        <Homepage />
+      </MemoryRouter>,
+    );
     // act
     const employees = screen.queryAllByTestId("mock-employee");
     // assert
@@ -220,7 +258,11 @@ describe("Homepage", () => {
 
   it("Should call useEmployees on render", () => {
     // arrange
-    render(<Homepage />);
+    render(
+      <MemoryRouter>
+        <Homepage />
+      </MemoryRouter>,
+    );
     // assert
     expect(useEmployees).toHaveBeenCalledTimes(1);
     expect(useEmployees).toHaveBeenCalledWith({});
@@ -229,9 +271,13 @@ describe("Homepage", () => {
   it("Should call useEmployees with a non-blank search query object when there is a search term", async () => {
     // arrange
     const user = userEvent.setup();
-    render(<Homepage />);
+    render(
+      <MemoryRouter>
+        <Homepage />
+      </MemoryRouter>,
+    );
     //act
-    const searchBtn = screen.getByTestId("name-searchBy");
+    const searchBtn = screen.getByTestId("general-searchBy");
     await user.click(searchBtn);
     // assert
     await waitFor(() => {
@@ -247,9 +293,13 @@ describe("Homepage", () => {
   it("Should pass the memoized query object reference on re-render with same search query values", async () => {
     // arrange
     const user = userEvent.setup();
-    render(<Homepage />);
+    render(
+      <MemoryRouter>
+        <Homepage />
+      </MemoryRouter>,
+    );
     //act
-    const searchBtn = screen.getByTestId("name-searchBy");
+    const searchBtn = screen.getByTestId("general-searchBy");
     await user.click(searchBtn);
     await user.click(searchBtn);
     const firstClickQuery = vi.mocked(useEmployees).mock.calls[1][0];
@@ -262,9 +312,13 @@ describe("Homepage", () => {
   it("Should retrigger a search when re-rendered with different search query values", async () => {
     // arrange
     const user = userEvent.setup();
-    render(<Homepage />);
+    render(
+      <MemoryRouter>
+        <Homepage />
+      </MemoryRouter>,
+    );
     //act
-    const searchBtn = screen.getByTestId("name-searchBy");
+    const searchBtn = screen.getByTestId("general-searchBy");
     const emptysearchBtn = screen.getByTestId("empty-search");
     await user.click(searchBtn);
     await user.click(emptysearchBtn);
@@ -274,5 +328,64 @@ describe("Homepage", () => {
     expect(useEmployees).toHaveBeenCalledTimes(3);
     expect(firstClickQuery).not.toBe(secondClickQuery);
     expect(secondClickQuery).toEqual({});
+  });
+
+  it("Should update the URL with a search term parameter when a search term is provided", async () => {
+    // arrange
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <Homepage />
+        <LocationDisplay />
+      </MemoryRouter>,
+    );
+    //act
+    const searchBtn = screen.getByTestId("general-searchBy");
+    await user.click(searchBtn);
+    // assert
+    await waitFor(() => {
+      expect(useEmployees).toHaveBeenCalledTimes(2);
+      const locationDisplay = screen.getByTestId("location-display");
+      expect(locationDisplay).toHaveTextContent("?search=Sarah");
+    });
+  });
+
+  it("Should update the URL with both search term and search by parameters when both are provided", async () => {
+    // arrange
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Homepage />
+        <LocationDisplay />
+      </MemoryRouter>,
+    );
+    //act
+    const searchBtn = screen.getByTestId("name-searchBy");
+    await user.click(searchBtn);
+    // assert
+    expect(useEmployees).toHaveBeenCalledTimes(2);
+    const locationDisplay = screen.getByTestId("location-display");
+    expect(locationDisplay).toHaveTextContent(
+      "?search=Alex&searchBy=firstName",
+    );
+  });
+
+  it("Should update the URL with new search parameters on multiple searches", async () => {
+    // arrange
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Homepage />
+        <LocationDisplay />
+      </MemoryRouter>,
+    );
+    //act
+    const searchBtn = screen.getByTestId("general-searchBy");
+    const emptysearchBtn = screen.getByTestId("empty-search");
+    const locationDisplay = screen.getByTestId("location-display");
+    await user.click(searchBtn);
+    expect(locationDisplay).toHaveTextContent("?search=Sarah");
+    await user.click(emptysearchBtn);
+    expect(locationDisplay).toHaveTextContent("");
   });
 });

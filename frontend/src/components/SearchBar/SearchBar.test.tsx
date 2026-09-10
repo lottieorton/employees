@@ -4,7 +4,6 @@ import userEvent from "@testing-library/user-event";
 
 describe("SearchBar", () => {
   const mockHandleSearch = vi.fn();
-  const mockHandleSearchBy = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -18,8 +17,9 @@ describe("SearchBar", () => {
     // arrange
     render(
       <SearchBar
+        initialSearchValue=""
+        initialSearchByValue="search"
         handleSearch={mockHandleSearch}
-        handleSearchBy={mockHandleSearchBy}
       />,
     );
     // act
@@ -43,13 +43,31 @@ describe("SearchBar", () => {
     expect(dropdownOptions[1]).toHaveValue("firstName");
   });
 
+  it("Should render provided initial search values", () => {
+    // arrange
+    render(
+      <SearchBar
+        initialSearchValue="Sarah"
+        initialSearchByValue="firstName"
+        handleSearch={mockHandleSearch}
+      />,
+    );
+    // act
+    const searchBar = screen.getByRole("textbox");
+    const searchByDropdown = screen.getByRole("combobox");
+    // assert
+    expect(searchBar).toHaveValue("Sarah");
+    expect(searchByDropdown).toHaveValue("firstName");
+  });
+
   it("Should update the input on change", async () => {
     // arrange
     const user = userEvent.setup();
     render(
       <SearchBar
+        initialSearchValue=""
+        initialSearchByValue="search"
         handleSearch={mockHandleSearch}
-        handleSearchBy={mockHandleSearchBy}
       />,
     );
     // act
@@ -64,8 +82,9 @@ describe("SearchBar", () => {
     const user = userEvent.setup();
     render(
       <SearchBar
+        initialSearchValue=""
+        initialSearchByValue="search"
         handleSearch={mockHandleSearch}
-        handleSearchBy={mockHandleSearchBy}
       />,
     );
     // act
@@ -75,13 +94,14 @@ describe("SearchBar", () => {
     expect(searchByDropdown).toHaveValue("firstName");
   });
 
-  it("Should set a timer to call handle search and searchby on input change", async () => {
+  it("Should set a timer to call handle search on input change", async () => {
     // arrange
     vi.useFakeTimers();
     render(
       <SearchBar
+        initialSearchValue=""
+        initialSearchByValue="search"
         handleSearch={mockHandleSearch}
-        handleSearchBy={mockHandleSearchBy}
       />,
     );
     // act
@@ -92,9 +112,7 @@ describe("SearchBar", () => {
     expect(mockHandleSearch).not.toHaveBeenCalled();
     vi.advanceTimersByTime(500);
     expect(mockHandleSearch).toHaveBeenCalledOnce();
-    expect(mockHandleSearch).toHaveBeenCalledWith("Hello");
-    expect(mockHandleSearchBy).toHaveBeenCalledOnce();
-    expect(mockHandleSearchBy).toHaveBeenCalledWith("search");
+    expect(mockHandleSearch).toHaveBeenCalledWith("Hello", "search");
   });
 
   it("Should set a timer to call handle search and searchby on selected search by change", async () => {
@@ -102,8 +120,9 @@ describe("SearchBar", () => {
     vi.useFakeTimers();
     render(
       <SearchBar
+        initialSearchValue=""
+        initialSearchByValue="search"
         handleSearch={mockHandleSearch}
-        handleSearchBy={mockHandleSearchBy}
       />,
     );
     // act
@@ -114,9 +133,7 @@ describe("SearchBar", () => {
     expect(mockHandleSearch).not.toHaveBeenCalled();
     vi.advanceTimersByTime(500);
     expect(mockHandleSearch).toHaveBeenCalledOnce();
-    expect(mockHandleSearch).toHaveBeenCalledWith("");
-    expect(mockHandleSearchBy).toHaveBeenCalledOnce();
-    expect(mockHandleSearchBy).toHaveBeenCalledWith("firstName");
+    expect(mockHandleSearch).toHaveBeenCalledWith("", "firstName");
   });
 
   it("Should reset a timer when additional actions are taken within the timer window", async () => {
@@ -124,8 +141,9 @@ describe("SearchBar", () => {
     vi.useFakeTimers();
     render(
       <SearchBar
+        initialSearchValue=""
+        initialSearchByValue="search"
         handleSearch={mockHandleSearch}
-        handleSearchBy={mockHandleSearchBy}
       />,
     );
     // act
@@ -142,9 +160,7 @@ describe("SearchBar", () => {
     expect(searchBar).toHaveValue("Hello");
     expect(searchByDropdown).toHaveValue("firstName");
     expect(mockHandleSearch).toHaveBeenCalledOnce();
-    expect(mockHandleSearch).toHaveBeenCalledWith("Hello");
-    expect(mockHandleSearchBy).toHaveBeenCalledOnce();
-    expect(mockHandleSearchBy).toHaveBeenCalledWith("firstName");
+    expect(mockHandleSearch).toHaveBeenCalledWith("Hello", "firstName");
   });
 
   it("Should set multiple timers when additional actions are taken after previous events have resolved", async () => {
@@ -152,8 +168,9 @@ describe("SearchBar", () => {
     vi.useFakeTimers();
     render(
       <SearchBar
+        initialSearchValue=""
+        initialSearchByValue="search"
         handleSearch={mockHandleSearch}
-        handleSearchBy={mockHandleSearchBy}
       />,
     );
     // act
@@ -161,16 +178,13 @@ describe("SearchBar", () => {
     fireEvent.change(searchByDropdown, { target: { value: "firstName" } });
     vi.advanceTimersByTime(500);
     expect(searchByDropdown).toHaveValue("firstName");
-    expect(mockHandleSearchBy).toHaveBeenCalledOnce();
+    expect(mockHandleSearch).toHaveBeenCalledOnce();
     fireEvent.change(searchByDropdown, { target: { value: "lastName" } });
     vi.advanceTimersByTime(500);
     // assert
     expect(searchByDropdown).toHaveValue("lastName");
     expect(mockHandleSearch).toHaveBeenCalledTimes(2);
-    expect(mockHandleSearchBy).toHaveBeenCalledTimes(2);
-    expect(mockHandleSearch).toHaveBeenNthCalledWith(1, "");
-    expect(mockHandleSearch).toHaveBeenNthCalledWith(2, "");
-    expect(mockHandleSearchBy).toHaveBeenNthCalledWith(1, "firstName");
-    expect(mockHandleSearchBy).toHaveBeenNthCalledWith(2, "lastName");
+    expect(mockHandleSearch).toHaveBeenNthCalledWith(1, "", "firstName");
+    expect(mockHandleSearch).toHaveBeenNthCalledWith(2, "", "lastName");
   });
 });
