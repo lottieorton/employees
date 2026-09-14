@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
 
 interface SearchBarProps {
-  handleSearch: (s: string) => void;
-  handleSearchBy: (s: string) => void;
+  initialSearchValue: string;
+  initialSearchByValue: string;
+  handleSearch: (term: string, by: string) => void;
 }
 
 export default function SearchBar({
+  initialSearchValue,
+  initialSearchByValue,
   handleSearch,
-  handleSearchBy,
 }: SearchBarProps) {
-  const [input, setInput] = useState("");
-  const [selectedSearchBy, setSelectedSearchBy] = useState("search");
+  const [input, setInput] = useState(initialSearchValue);
+  const [selectedSearchBy, setSelectedSearchBy] =
+    useState(initialSearchByValue);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
@@ -18,8 +21,7 @@ export default function SearchBar({
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      handleSearch(input);
-      handleSearchBy(selectedSearchBy);
+      handleSearch(input, selectedSearchBy);
     }, 500);
 
     return () => clearTimeout(timeout);

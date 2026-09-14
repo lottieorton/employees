@@ -55,7 +55,11 @@ public class DataSeeder implements CommandLineRunner {
             new RoleSeedData("UI/UX Designer", SeniorityLevel.MID, Department.DESIGN),
             new RoleSeedData("Product Manager", SeniorityLevel.LEAD, Department.PRODUCT),
             new RoleSeedData("Engineering Manager", SeniorityLevel.LEAD, Department.ENGINEERING),
-            new RoleSeedData("HR Specialist", SeniorityLevel.MID, Department.HUMAN_RESOURCES)
+            new RoleSeedData("HR Manager", SeniorityLevel.LEAD, Department.HUMAN_RESOURCES),
+            new RoleSeedData("Junior Frontend Developer", SeniorityLevel.JUNIOR, Department.ENGINEERING),
+            new RoleSeedData("HR Specialist", SeniorityLevel.MID, Department.HUMAN_RESOURCES),
+            new RoleSeedData("QA Automation Engineer", SeniorityLevel.SENIOR, Department.QUALITY_ASSURANCE),
+            new RoleSeedData("Associate Product Manager", SeniorityLevel.JUNIOR, Department.PRODUCT)
         );   
         List<Role> rolesToSave = new ArrayList<>();
 
@@ -93,7 +97,30 @@ public class DataSeeder implements CommandLineRunner {
         address2.setPostalCode("2000");
         address2.setCountry("Australia");
         addressRepo.saveAndFlush(address2);
-        return List.of(address1, address2);
+        Address address3 = new Address();
+        address3.setStreetAddress("42 Wallaby Way");
+        address3.setCity("Sydney");
+        address3.setStateProvinceRegion("New South Wales");
+        address3.setPostalCode("2000");
+        address3.setCountry("Australia");
+        addressRepo.saveAndFlush(address3);
+        Address address4 = new Address();
+        address4.setUnitNumber("Apt 4B");
+        address4.setStreetAddress("742 Evergreen Terrace");
+        address4.setAddressLine2("Building C");
+        address4.setCity("Springfield");
+        address4.setPostalCode("97477");
+        address4.setCountry("United States");
+        addressRepo.saveAndFlush(address4);
+        Address address5 = new Address();
+        address5.setUnitNumber("Suite 300");
+        address5.setStreetAddress("101 Innovation Boulevard");
+        address5.setCity("Melbourne");
+        address5.setStateProvinceRegion("Victoria");
+        address5.setPostalCode("3000");
+        address5.setCountry("Australia");
+        addressRepo.saveAndFlush(address5);
+        return List.of(address1, address2, address3, address4, address5);
     }
 
     private void seedEmployees(List<Role> roles, List<Address> addresses) { 
@@ -108,7 +135,7 @@ public class DataSeeder implements CommandLineRunner {
         employee1.setMiddleName("Marie");
         employee1.setPronouns(Pronouns.SHE_HER);
         employee1.setPreferredName("SJ");
-        employee1.setEmailAddress("sarah.jenkins@example.com");
+        employee1.setEmailAddress("sarah.jenkins@mycompany.com");
         employee1.setPhoneNumber("+61412345678");
         employee1.setAddress(addresses.get(0));
         employee1.setRole(roles.get(0));
@@ -126,7 +153,7 @@ public class DataSeeder implements CommandLineRunner {
         employee2.setMiddleName(null);
         employee2.setPreferredName("Al");
         employee2.setPronouns(Pronouns.HE_HIM);
-        employee2.setEmailAddress("alex.rivera@example.com");
+        employee2.setEmailAddress("alex.rivera@mycompany.com");
         employee2.setPhoneNumber("+61498765432");
         employee2.setAddress(addresses.get(1));
         employee2.setRole(roles.get(1));
@@ -137,5 +164,59 @@ public class DataSeeder implements CommandLineRunner {
         employee2.setLastDate(null);
         employee2.setIsCurrentlyEmployed(true);
         employeeRepo.saveAndFlush(employee2);
+
+        Employee employee3 = new Employee();
+        employee3.setFirstName("Liam");
+        employee3.setLastName("O'Connor");
+        employee3.setMiddleName("James");
+        employee3.setPreferredName("Li");
+        employee3.setPronouns(Pronouns.HE_THEY);
+        employee3.setEmailAddress("liam.oconnor@mycompany.com");
+        employee3.setPhoneNumber("+61433221144");
+        employee3.setAddress(addresses.get(2));
+        employee3.setRole(roles.get(2));
+        employee3.setManager(employee1);
+        employee3.setWorkSetup(WorkSetup.REMOTE);
+        employee3.setEmploymentType(EmploymentType.CONTRACTOR);
+        employee3.setStartDate(LocalDate.of(2024, 1, 10));
+        employee3.setLastDate(null);
+        employee3.setIsCurrentlyEmployed(true);
+        employeeRepo.saveAndFlush(employee3);
+
+        Employee employee4 = new Employee();
+        employee4.setFirstName("Chloe");
+        employee4.setLastName("Tan");
+        employee4.setMiddleName(null);
+        employee4.setPreferredName(null);
+        employee4.setPronouns(Pronouns.SHE_HER);
+        employee4.setEmailAddress("chloe.tan@mycompany.com");
+        employee4.setPhoneNumber("+61455667788");
+        employee4.setAddress(addresses.get(3));
+        employee4.setRole(roles.get(3));
+        employee4.setManager(null);
+        employee4.setWorkSetup(WorkSetup.HYBRID);
+        employee4.setEmploymentType(EmploymentType.PART_TIME_PERMANENT);
+        employee4.setStartDate(LocalDate.of(2022, 5, 1));
+        employee4.setLastDate(LocalDate.of(2025, 12, 31));
+        employee4.setIsCurrentlyEmployed(false);
+        employeeRepo.saveAndFlush(employee4);
+
+        Employee employee5 = new Employee();
+        employee5.setFirstName("Marcus");
+        employee5.setLastName("Vance");
+        employee5.setMiddleName("David");
+        employee5.setPreferredName(null);
+        employee5.setPronouns(Pronouns.HE_HIM);
+        employee5.setEmailAddress("marcus.vance@mycompany.com");
+        employee5.setPhoneNumber("+61488990011");
+        employee5.setAddress(addresses.get(4));
+        employee5.setRole(roles.get(4));
+        employee5.setManager(employee2);
+        employee5.setWorkSetup(WorkSetup.ON_SITE);
+        employee5.setEmploymentType(EmploymentType.FULL_TIME_PERMANENT);
+        employee5.setStartDate(LocalDate.of(2025, 2, 20));
+        employee5.setLastDate(null);
+        employee5.setIsCurrentlyEmployed(true);
+        employeeRepo.saveAndFlush(employee5);
     }
 }

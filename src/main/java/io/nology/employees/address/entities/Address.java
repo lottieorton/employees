@@ -14,7 +14,7 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "unit_number", nullable = false)
+    @Column(name = "unit_number")
     private String unitNumber;
 
     @Column(name = "street_address", nullable = false)

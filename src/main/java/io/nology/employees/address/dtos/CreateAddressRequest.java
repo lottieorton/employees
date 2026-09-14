@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 public class CreateAddressRequest {
-    @NotBlank(message = "Unit number cannot be empty")
+    @Pattern(regexp = ".*\\S.*", message = "Unit number cannot be empty")
     private String unitNumber;
 
     @NotBlank(message = "Street address cannot be empty")

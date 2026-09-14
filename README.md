@@ -171,13 +171,15 @@ SPRING_PROFILE=dev
 
 ## Future Goals
 
-- **Frontend Testing:** Create both unit level and end-to-end testing suites.
+- **Frontend Testing:** Create end-to-end testing suites.
 - **Backend Logging:** Implement a Log4j configuration to record application activity.
 - **Pagination:** Implement pagination functionality across the full stack.
 - **Search Filtering:** Implement employee filtering with dropdowns menus on the frontend.
 - **Multipage Form:** Update the employee form to be spread over multiple pages.
 - **Manager/Subordinate Linking:** Add links between managers and their direct reports on the employee details page.
 - **Soft Delete:** Implement a soft-delete feature so inactive employees are filtered out by default, while remaining accessible via an explicit filter.
+- **Refactor Employee-Address Relationship:** Address has an associated employee (current relationship is reversed)
+- **Contracts Endpoint:** Introduce a separate contracts table, with employees having multiple contracts and refactoring of role-employee relationship
 
 ---
 

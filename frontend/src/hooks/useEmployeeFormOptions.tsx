@@ -12,7 +12,7 @@ export function useEmployeeFormOptions(
   control: Control<FormValues>,
   currentEmployee: Employee | undefined,
 ) {
-  // form enums state
+  // Form enums state
   const [formOptions, setFormOptions] = useState<FormOptions>({
     pronouns: [],
     workSetup: [],
@@ -21,7 +21,7 @@ export function useEmployeeFormOptions(
   const [isFormEnumsError, setIsFormEnumsError] = useState<boolean>(false);
   const [isFormEnumsLoading, setIsFormEnumsLoading] = useState<boolean>(false);
 
-  // roles state
+  // Roles state
   const [roles, setRoles] = useState<Role[]>([]);
   const [isRolesLoading, setIsRolesLoading] = useState<boolean>(false);
   const [isRolesError, setIsRolesError] = useState<boolean>(false);
@@ -30,13 +30,14 @@ export function useEmployeeFormOptions(
   const selectedSeniority = useWatch({ control, name: "seniorityLevel" });
   const selectedDepartment = useWatch({ control, name: "department" });
 
-  //employees
+  // Employees
   const {
     data: employees = [],
     isFetching: isEmployeesFetching,
     isError: isEmployeesError,
   } = useEmployees();
 
+  // Roles fetching
   useEffect(() => {
     setIsRolesLoading(true);
     setIsRolesError(false);
@@ -47,6 +48,7 @@ export function useEmployeeFormOptions(
       .finally(() => setIsRolesLoading(false));
   }, []);
 
+  // Form enums fetching and mapping to form options format
   useEffect(() => {
     setIsFormEnumsLoading(true);
     setIsFormEnumsError(false);
@@ -66,6 +68,8 @@ export function useEmployeeFormOptions(
       .catch(() => setIsFormEnumsError(true))
       .finally(() => setIsFormEnumsLoading(false));
   }, []);
+
+  // Helper functions to filter and deduplicate role dropdown options, providing remaining viable role combinations from selected fields
 
   const getFilteredRolesExcluding = (excludeField?: keyof Role) => {
     if (!roles) return [];
@@ -103,6 +107,7 @@ export function useEmployeeFormOptions(
     });
   };
 
+  // Return ID of selected role based on the selected form field values
   const getSelectedRoleId = (d: FormValues) => {
     return roles?.find(
       (r) =>
@@ -112,6 +117,7 @@ export function useEmployeeFormOptions(
     )?.id;
   };
 
+  // Return formatted list of employees whilst filtering out the current employee
   const managerOptions = employees
     .filter((e) => !currentEmployee || currentEmployee.id !== e.id)
     .map((e) => {

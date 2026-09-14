@@ -151,7 +151,6 @@ export default function EmployeeForm({
           id="unitNumber"
           label="Unit Number"
           colSpan="col-span-1"
-          required
           registration={register("unitNumber")}
           error={errors.unitNumber?.message}
         />
