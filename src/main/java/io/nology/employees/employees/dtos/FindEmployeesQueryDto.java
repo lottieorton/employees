@@ -1,6 +1,7 @@
 package io.nology.employees.employees.dtos;
 
 import java.time.LocalDate;
+import java.util.StringJoiner;
 
 import io.nology.employees.employees.entities.EmploymentType;
 import io.nology.employees.employees.entities.WorkSetup;
@@ -86,4 +87,30 @@ public class FindEmployeesQueryDto {
         this.isCurrentlyEmployed = isCurrentlyEmployed;
     }
 
+    @Override
+    public String toString() {
+        StringJoiner joiner = new StringJoiner(", ", "FindEmployeesQueryDto = {", "}");
+
+        if(search != null) joiner.add("search='" + search + "'");
+        if(firstName != null) joiner.add("firstName='" + firstName + "'");
+        if(lastName != null) joiner.add("lastName='" + lastName + "'");
+        if(emailAddress != null) joiner.add("emailAddress='" + emailAddress + "'");
+        if(roleName != null) joiner.add("roleName='" + roleName + "'");
+        if(roleId != null) joiner.add("roleId=" + roleId);
+        if(workSetup != null) joiner.add("workSetup=" + workSetup);
+        if(employmentType != null) joiner.add("employmentType=" + employmentType);
+        if(startDateFrom != null) joiner.add("startDateFrom=" + startDateFrom);
+        if(startDateTo != null) joiner.add("startDateTo=" + startDateTo);
+        if(isCurrentlyEmployed != null) joiner.add("isCurrentlyEmployed=" + isCurrentlyEmployed);
+
+        return joiner.toString();
+    }
+
+    public boolean hasFilters() {
+        return search != null || firstName != null || lastName != null || 
+            emailAddress != null || roleName != null || roleId != null || 
+            workSetup != null || employmentType != null || 
+            startDateFrom != null || startDateTo != null || 
+            isCurrentlyEmployed != null;
+    }
 }
