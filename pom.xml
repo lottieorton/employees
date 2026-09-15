@@ -111,6 +111,13 @@
 			<version>3.2.6</version>
 		</dependency>
 
+		<!-- Faker -->
+		 <dependency>
+			<groupId>com.github.javafaker</groupId>
+			<artifactId>javafaker</artifactId>
+			<version>1.0.2</version>
+		</dependency>
+
 		<!-- Tests -->
 		<dependency>
 			<groupId>io.rest-assured</groupId>

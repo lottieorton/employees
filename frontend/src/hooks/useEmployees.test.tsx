@@ -9,6 +9,7 @@ import {
 import { type ReactNode } from "react";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import {
+  EMPLOYEES_KEY,
   useCreateEmployee,
   useDeleteEmployee,
   useEmployee,
@@ -124,9 +125,29 @@ describe("useEmployees hooks", () => {
       },
     ];
 
+    const mockEmployeesResponse = {
+      currentPage: 1,
+      totalPages: 1,
+      totalResults: 2,
+      resultsPerPage: 10,
+      nextPage: null,
+      previousPage: null,
+      data: mockEmployees,
+    };
+
+    const mockEmployeesSearchResultResponse = {
+      currentPage: 1,
+      totalPages: 1,
+      totalResults: 2,
+      resultsPerPage: 10,
+      nextPage: null,
+      previousPage: null,
+      data: [mockEmployees[0]],
+    };
+
     it("Should return employees on successful getAllEmployees without search", async () => {
       // arrange
-      vi.mocked(getAllEmployees).mockResolvedValueOnce(mockEmployees);
+      vi.mocked(getAllEmployees).mockResolvedValueOnce(mockEmployeesResponse);
       // act
       const { result } = renderHook(() => useEmployees(), {
         wrapper: createWrapper(),
@@ -137,7 +158,7 @@ describe("useEmployees hooks", () => {
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
         expect(getAllEmployees).toHaveBeenCalledOnce();
-        expect(result.current.data).toEqual(mockEmployees);
+        expect(result.current.data).toEqual(mockEmployeesResponse);
         expect(result.current.isLoading).toBe(false);
       });
     });
@@ -147,7 +168,7 @@ describe("useEmployees hooks", () => {
       const mockSearchQuery = {
         search: "Software Developer",
       };
-      vi.mocked(getAllEmployees).mockResolvedValueOnce(mockEmployees);
+      vi.mocked(getAllEmployees).mockResolvedValueOnce(mockEmployeesResponse);
       // act
       const { result } = renderHook(() => useEmployees(mockSearchQuery), {
         wrapper: createWrapper(),
@@ -158,7 +179,8 @@ describe("useEmployees hooks", () => {
       await waitFor(() => {
         expect(result.current.isSuccess).toBe(true);
         expect(getAllEmployees).toHaveBeenCalledOnce();
-        expect(result.current.data).toEqual(mockEmployees);
+        expect(getAllEmployees).toHaveBeenCalledWith(mockSearchQuery);
+        expect(result.current.data).toEqual(mockEmployeesResponse);
         expect(result.current.isLoading).toBe(false);
       });
     });
@@ -168,10 +190,9 @@ describe("useEmployees hooks", () => {
       const mockSearchQuery = {
         search: "Software Developer",
       };
-      const [mockSearchResult] = mockEmployees;
       vi.mocked(getAllEmployees)
-        .mockResolvedValueOnce(mockEmployees)
-        .mockResolvedValueOnce([mockSearchResult]);
+        .mockResolvedValueOnce(mockEmployeesResponse)
+        .mockResolvedValueOnce(mockEmployeesSearchResultResponse);
       // act
       const { result, rerender } = renderHook(
         (searchQuery?: SearchQuery) => useEmployees(searchQuery),
@@ -181,13 +202,13 @@ describe("useEmployees hooks", () => {
       );
       // assert
       await waitFor(() => {
-        expect(result.current.data).toEqual(mockEmployees);
+        expect(result.current.data).toEqual(mockEmployeesResponse);
         expect(getAllEmployees).toHaveBeenCalledWith(undefined);
       });
       rerender(mockSearchQuery);
       // assert
       await waitFor(() => {
-        expect(result.current.data).toEqual([mockSearchResult]);
+        expect(result.current.data).toEqual(mockEmployeesSearchResultResponse);
         expect(getAllEmployees).toHaveBeenCalledTimes(2);
         expect(getAllEmployees).toHaveBeenLastCalledWith({
           search: "Software Developer",
@@ -354,6 +375,16 @@ describe("useEmployees hooks", () => {
         expect(result.current.data).toBe(undefined);
       });
     });
+
+    it("Should not fetch employee when id is undefined", () => {
+      // act
+      const { result } = renderHook(() => useEmployee(undefined), {
+        wrapper: createWrapper(),
+      });
+      // assert
+      expect(result.current.isFetching).toBe(false);
+      expect(getEmployeeById).not.toHaveBeenCalled();
+    });
   });
 
   describe("createEmployee", () => {
@@ -416,6 +447,26 @@ describe("useEmployees hooks", () => {
       isCurrentlyEmployed: true,
     };
 
+    const mockEmptyEmployeesResponse = {
+      currentPage: 1,
+      totalPages: 1,
+      totalResults: 2,
+      resultsPerPage: 10,
+      nextPage: null,
+      previousPage: null,
+      data: [],
+    };
+
+    const mockEmployeesResponse = {
+      currentPage: 1,
+      totalPages: 1,
+      totalResults: 2,
+      resultsPerPage: 10,
+      nextPage: null,
+      previousPage: null,
+      data: [mockEmployee],
+    };
+
     it("Should return employee on successful createEmployee", async () => {
       // arrange
       vi.mocked(createEmployee).mockResolvedValueOnce(mockEmployee);
@@ -441,8 +492,8 @@ describe("useEmployees hooks", () => {
     it("Should cause getAllEmployees to be called on successful createEmployee", async () => {
       // arrange
       vi.mocked(getAllEmployees)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([mockEmployee]);
+        .mockResolvedValueOnce(mockEmptyEmployeesResponse)
+        .mockResolvedValueOnce(mockEmployeesResponse);
       vi.mocked(createEmployee).mockResolvedValueOnce(mockEmployee);
       const wrapper = createWrapper();
       const { result } = renderHook(
@@ -454,7 +505,7 @@ describe("useEmployees hooks", () => {
       );
       // act
       await waitFor(() => {
-        expect(result.current.query.data).toEqual([]);
+        expect(result.current.query.data).toEqual(mockEmptyEmployeesResponse);
       });
       expect(getAllEmployees).toHaveBeenCalledOnce();
       act(() => {
@@ -465,13 +516,13 @@ describe("useEmployees hooks", () => {
         expect(result.current.mutation.isSuccess).toBe(true);
         expect(createEmployee).toHaveBeenCalledOnce();
         expect(getAllEmployees).toHaveBeenCalledTimes(2);
-        expect(result.current.query.data).toEqual([mockEmployee]);
+        expect(result.current.query.data).toEqual(mockEmployeesResponse);
       });
     });
 
     it("Should return isError when creating employee errors", async () => {
       // arrange
-      vi.mocked(getAllEmployees).mockResolvedValueOnce([mockEmployee]);
+      vi.mocked(getAllEmployees).mockResolvedValueOnce(mockEmployeesResponse);
       vi.mocked(createEmployee).mockRejectedValueOnce(
         new Error("Could not create employee"),
       );
@@ -485,7 +536,7 @@ describe("useEmployees hooks", () => {
       );
       // act
       await waitFor(() => {
-        expect(result.current.query.data).toEqual([mockEmployee]);
+        expect(result.current.query.data).toEqual(mockEmployeesResponse);
       });
       expect(getAllEmployees).toHaveBeenCalledOnce();
       act(() => {
@@ -600,6 +651,26 @@ describe("useEmployees hooks", () => {
       },
     };
 
+    const mockEmployeesResponse = {
+      currentPage: 1,
+      totalPages: 1,
+      totalResults: 2,
+      resultsPerPage: 10,
+      nextPage: null,
+      previousPage: null,
+      data: [mockEmployee],
+    };
+
+    const mockUpdatedEmployeesResponse = {
+      currentPage: 1,
+      totalPages: 1,
+      totalResults: 2,
+      resultsPerPage: 10,
+      nextPage: null,
+      previousPage: null,
+      data: [mockUpdatedEmployee],
+    };
+
     it("Should return employee on successful updateEmployee", async () => {
       // arrange
       vi.mocked(updateEmployee).mockResolvedValueOnce(mockUpdatedEmployee);
@@ -628,8 +699,8 @@ describe("useEmployees hooks", () => {
     it("Should cause getAllEmployees to be called on successful updateEmployee", async () => {
       // arrange
       vi.mocked(getAllEmployees)
-        .mockResolvedValueOnce([mockEmployee])
-        .mockResolvedValueOnce([mockUpdatedEmployee]);
+        .mockResolvedValueOnce(mockEmployeesResponse)
+        .mockResolvedValueOnce(mockUpdatedEmployeesResponse);
       vi.mocked(updateEmployee).mockResolvedValueOnce(mockUpdatedEmployee);
       const wrapper = createWrapper();
       const { result } = renderHook(
@@ -641,7 +712,7 @@ describe("useEmployees hooks", () => {
       );
       // act
       await waitFor(() => {
-        expect(result.current.query.data).toEqual([mockEmployee]);
+        expect(result.current.query.data).toEqual(mockEmployeesResponse);
       });
       expect(getAllEmployees).toHaveBeenCalledOnce();
       act(() => {
@@ -652,13 +723,13 @@ describe("useEmployees hooks", () => {
         expect(result.current.mutation.isSuccess).toBe(true);
         expect(updateEmployee).toHaveBeenCalledOnce();
         expect(getAllEmployees).toHaveBeenCalledTimes(2);
-        expect(result.current.query.data).toEqual([mockUpdatedEmployee]);
+        expect(result.current.query.data).toEqual(mockUpdatedEmployeesResponse);
       });
     });
 
     it("Should return isError when updating employee errors", async () => {
       // arrange
-      vi.mocked(getAllEmployees).mockResolvedValueOnce([mockEmployee]);
+      vi.mocked(getAllEmployees).mockResolvedValueOnce(mockEmployeesResponse);
       vi.mocked(updateEmployee).mockRejectedValueOnce(
         new Error("Could not update employee"),
       );
@@ -672,7 +743,7 @@ describe("useEmployees hooks", () => {
       );
       // act
       await waitFor(() => {
-        expect(result.current.query.data).toEqual([mockEmployee]);
+        expect(result.current.query.data).toEqual(mockEmployeesResponse);
       });
       expect(getAllEmployees).toHaveBeenCalledOnce();
       act(() => {
@@ -691,7 +762,7 @@ describe("useEmployees hooks", () => {
     });
   });
 
-  describe("updateEmployee", () => {
+  describe("deleteEmployee", () => {
     const mockEmployee = {
       id: 1,
       firstName: "Sarah",
@@ -723,6 +794,26 @@ describe("useEmployees hooks", () => {
       startDate: "2021-03-15",
       lastDate: null,
       isCurrentlyEmployed: true,
+    };
+
+    const mockEmployeesResponse = {
+      currentPage: 1,
+      totalPages: 1,
+      totalResults: 2,
+      resultsPerPage: 10,
+      nextPage: null,
+      previousPage: null,
+      data: [mockEmployee],
+    };
+
+    const mockEmptyEmployeesResponse = {
+      currentPage: 1,
+      totalPages: 1,
+      totalResults: 2,
+      resultsPerPage: 10,
+      nextPage: null,
+      previousPage: null,
+      data: [],
     };
 
     it("Should return true on successful deleteEmployee with no addressId provided", async () => {
@@ -776,8 +867,8 @@ describe("useEmployees hooks", () => {
     it("Should cause getAllEmployees to be called on successful deleteEmployee", async () => {
       // arrange
       vi.mocked(getAllEmployees)
-        .mockResolvedValueOnce([mockEmployee])
-        .mockResolvedValueOnce([]);
+        .mockResolvedValueOnce(mockEmployeesResponse)
+        .mockResolvedValueOnce(mockEmptyEmployeesResponse);
       vi.mocked(deleteEmployee).mockResolvedValueOnce(true);
       vi.mocked(deleteAddress).mockResolvedValueOnce(true);
       const wrapper = createWrapper();
@@ -790,7 +881,7 @@ describe("useEmployees hooks", () => {
       );
       // act
       await waitFor(() => {
-        expect(result.current.query.data).toEqual([mockEmployee]);
+        expect(result.current.query.data).toEqual(mockEmployeesResponse);
       });
       expect(getAllEmployees).toHaveBeenCalledOnce();
       act(() => {
@@ -801,13 +892,13 @@ describe("useEmployees hooks", () => {
         expect(result.current.mutation.isSuccess).toBe(true);
         expect(deleteEmployee).toHaveBeenCalledOnce();
         expect(getAllEmployees).toHaveBeenCalledTimes(2);
-        expect(result.current.query.data).toEqual([]);
+        expect(result.current.query.data).toEqual(mockEmptyEmployeesResponse);
       });
     });
 
     it("Should return isError when deleting employee errors", async () => {
       // arrange
-      vi.mocked(getAllEmployees).mockResolvedValueOnce([mockEmployee]);
+      vi.mocked(getAllEmployees).mockResolvedValueOnce(mockEmployeesResponse);
       vi.mocked(deleteEmployee).mockRejectedValueOnce(
         new Error("Could not delete employee"),
       );
@@ -821,7 +912,7 @@ describe("useEmployees hooks", () => {
       );
       // act
       await waitFor(() => {
-        expect(result.current.query.data).toEqual([mockEmployee]);
+        expect(result.current.query.data).toEqual(mockEmployeesResponse);
       });
       expect(getAllEmployees).toHaveBeenCalledOnce();
       act(() => {
@@ -836,6 +927,40 @@ describe("useEmployees hooks", () => {
         );
         expect(deleteEmployee).toHaveBeenCalledOnce();
         expect(getAllEmployees).toHaveBeenCalledOnce();
+      });
+    });
+
+    it("Should remove individual employee query from cache on successful delete", async () => {
+      const queryClient = new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false },
+        },
+      });
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
+      );
+
+      // Pre-populate the cache with employee
+      queryClient.setQueryData([EMPLOYEES_KEY, "1"], mockEmployee);
+      expect(queryClient.getQueryData([EMPLOYEES_KEY, "1"])).toEqual(
+        mockEmployee,
+      );
+
+      vi.mocked(deleteEmployee).mockResolvedValueOnce(true);
+      const { result } = renderHook(() => useDeleteEmployee(), { wrapper });
+
+      // act
+      act(() => {
+        result.current.mutate({ id: 1 });
+      });
+
+      // assert
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+        expect(queryClient.getQueryData([EMPLOYEES_KEY, "1"])).toBeUndefined();
       });
     });
   });

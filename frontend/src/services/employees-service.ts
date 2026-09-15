@@ -1,5 +1,5 @@
 import { FetchError } from "../errors/errors";
-import type { Employee } from "../interfaces/Employee";
+import type { Employee, Employees } from "../interfaces/Employee";
 import type { SearchQuery } from "../interfaces/SearchQuery";
 import type { FormValues } from "../schemas/employeeSchema";
 
@@ -7,7 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 export const getAllEmployees = async (
   searchQuery?: SearchQuery,
-): Promise<Employee[]> => {
+): Promise<Employees> => {
   let queryString = "";
   if (searchQuery) {
     const params = new URLSearchParams();
@@ -53,7 +53,7 @@ export const createEmployee = async (
   if (response.status !== 201) {
     const errorResponseBody = await response.json().catch(() => null);
     throw new FetchError(
-      errorResponseBody.message ?? "Failed to create employee",
+      errorResponseBody?.message ?? "Failed to create employee",
     );
   }
   return response.json();
@@ -74,7 +74,7 @@ export const updateEmployee = async (
   if (!response.ok) {
     const errorResponseBody = await response.json().catch(() => null);
     throw new FetchError(
-      errorResponseBody.message ?? "Failed to update employee",
+      errorResponseBody?.message ?? "Failed to update employee",
     );
   }
   return response.json();
@@ -88,7 +88,7 @@ export const deleteEmployee = async (id: number): Promise<boolean> => {
   if (!response.ok) {
     const errorResponseBody = await response.json().catch(() => null);
     throw new FetchError(
-      errorResponseBody.message ?? "Failed to delete employee",
+      errorResponseBody?.message ?? "Failed to delete employee",
     );
   }
   return true;
@@ -97,7 +97,7 @@ export const deleteEmployee = async (id: number): Promise<boolean> => {
 export const getEmployeeFormEnums = async () => {
   const response = await fetch(`${API_URL}/employees/enums`);
   if (!response.ok) {
-    throw new FetchError("Failed for fetch form enums");
+    throw new FetchError("Failed to fetch form enums");
   }
   return response.json();
 };

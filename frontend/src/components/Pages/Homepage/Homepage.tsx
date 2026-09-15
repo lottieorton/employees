@@ -5,6 +5,17 @@ import SearchBar from "../../SearchBar/SearchBar";
 import { useEmployees } from "../../../hooks/useEmployees";
 import type { SearchQuery } from "../../../interfaces/SearchQuery";
 import { useSearchParams } from "react-router-dom";
+import type { Employees } from "../../../interfaces/Employee";
+
+const defaultEmployeesResponse: Employees = {
+  currentPage: 1,
+  totalPages: 1,
+  totalResults: 0,
+  resultsPerPage: 10,
+  nextPage: null,
+  previousPage: null,
+  data: [],
+};
 
 export default function Homepage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,7 +31,7 @@ export default function Homepage() {
   }, [searchTerm, searchBy]);
 
   const {
-    data: employees = [],
+    data: employees = defaultEmployeesResponse,
     isLoading,
     isError,
   } = useEmployees(searchQuery);
@@ -46,7 +57,7 @@ export default function Homepage() {
 
   return (
     <section className="w-full flex flex-col gap-5 3xl:gap-7">
-      <Header numEmployees={employees.length} />
+      <Header numEmployees={employees.totalResults} />
       <SearchBar
         initialSearchValue={searchTerm}
         initialSearchByValue={searchBy}
@@ -54,7 +65,7 @@ export default function Homepage() {
       />
       <EmployeeList
         searchTerm={searchTerm}
-        employees={employees}
+        employees={employees.data}
         isLoading={isLoading}
         isError={isError}
       />

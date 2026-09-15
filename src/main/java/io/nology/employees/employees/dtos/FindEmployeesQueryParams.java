@@ -3,10 +3,11 @@ package io.nology.employees.employees.dtos;
 import java.time.LocalDate;
 import java.util.StringJoiner;
 
+import io.nology.employees.common.dtos.PageQueryParams;
 import io.nology.employees.employees.entities.EmploymentType;
 import io.nology.employees.employees.entities.WorkSetup;
 
-public class FindEmployeesQueryDto {
+public class FindEmployeesQueryParams extends PageQueryParams {
     // Generic substring search across multiple fields
     private String search;
     private String firstName;
@@ -89,7 +90,12 @@ public class FindEmployeesQueryDto {
 
     @Override
     public String toString() {
-        StringJoiner joiner = new StringJoiner(", ", "FindEmployeesQueryDto = {", "}");
+        StringJoiner joiner = new StringJoiner(", ");
+        
+        // Inherited pagination fields from PageQueryParams
+        if (getPage() != null) joiner.add("page=" + getPage());
+        if (getSize() != null) joiner.add("size=" + getSize());
+        if (isUnpaged() == true) joiner.add("unpaged=" + isUnpaged());
 
         if(search != null) joiner.add("search='" + search + "'");
         if(firstName != null) joiner.add("firstName='" + firstName + "'");

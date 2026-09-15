@@ -119,6 +119,15 @@ describe("useEmployeeFormOptions", () => {
       isCurrentlyEmployed: true,
     },
   ];
+  const employeesResponse = {
+    currentPage: 1,
+    totalPages: 1,
+    totalResults: 2,
+    resultsPerPage: 10,
+    nextPage: null,
+    previousPage: null,
+    data: employees,
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -126,7 +135,7 @@ describe("useEmployeeFormOptions", () => {
     vi.mocked(getAllRoles).mockResolvedValue(mockRoles);
     vi.mocked(getEmployeeFormEnums).mockResolvedValue(mockFormOptions);
     vi.mocked(useEmployees).mockReturnValue({
-      data: employees,
+      data: employeesResponse,
       isFetching: false,
       isError: false,
     } as any);
@@ -272,8 +281,17 @@ describe("useEmployeeFormOptions", () => {
 
   it("Should return no employees when no employees returned from fetch", async () => {
     // arrange
-    vi.mocked(useEmployees).mockReturnValue({
+    const emptyEmployeesResponse = {
+      currentPage: 1,
+      totalPages: 1,
+      totalResults: 0,
+      resultsPerPage: 0,
+      nextPage: null,
+      previousPage: null,
       data: [],
+    };
+    vi.mocked(useEmployees).mockReturnValue({
+      data: emptyEmployeesResponse,
       isFetching: false,
       isError: false,
     } as any);
@@ -309,8 +327,17 @@ describe("useEmployeeFormOptions", () => {
 
   it("Should return loading when employees fetch is loading", async () => {
     // arrange
-    vi.mocked(useEmployees).mockReturnValue({
+    const emptyEmployeesResponse = {
+      currentPage: 1,
+      totalPages: 1,
+      totalResults: 0,
+      resultsPerPage: 0,
+      nextPage: null,
+      previousPage: null,
       data: [],
+    };
+    vi.mocked(useEmployees).mockReturnValue({
+      data: emptyEmployeesResponse,
       isFetching: true,
       isError: false,
     } as any);
@@ -326,8 +353,17 @@ describe("useEmployeeFormOptions", () => {
 
   it("Should return error when employees fetch errors", async () => {
     // arrange
-    vi.mocked(useEmployees).mockReturnValue({
+    const emptyEmployeesResponse = {
+      currentPage: 1,
+      totalPages: 1,
+      totalResults: 0,
+      resultsPerPage: 0,
+      nextPage: null,
+      previousPage: null,
       data: [],
+    };
+    vi.mocked(useEmployees).mockReturnValue({
+      data: emptyEmployeesResponse,
       isFetching: false,
       isError: true,
     } as any);

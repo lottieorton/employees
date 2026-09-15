@@ -163,11 +163,21 @@ describe("Homepage", () => {
     return <div data-testid="location-display">{location.search}</div>;
   }
 
+  const employeesResponse = {
+    currentPage: 1,
+    totalPages: 1,
+    totalResults: 2,
+    resultsPerPage: 10,
+    nextPage: null,
+    previousPage: null,
+    data: employees,
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
 
     vi.mocked(useEmployees).mockReturnValue({
-      data: employees,
+      data: employeesResponse,
       isLoading: false,
       isError: false,
     } as any);
@@ -204,8 +214,17 @@ describe("Homepage", () => {
 
   it("Should pass error to children components when there is an error fetching employees", () => {
     // arrange
+    const emptyEmployeesResponse = {
+      currentPage: 1,
+      totalPages: 1,
+      totalResults: 0,
+      resultsPerPage: 0,
+      nextPage: null,
+      previousPage: null,
+      data: [],
+    };
     vi.mocked(useEmployees).mockReturnValue({
-      data: employees,
+      data: emptyEmployeesResponse,
       isLoading: false,
       isError: true,
     } as any);
@@ -222,8 +241,17 @@ describe("Homepage", () => {
 
   it("Should pass loading status to children components when fetching employees", () => {
     // arrange
+    const emptyEmployeesResponse = {
+      currentPage: 1,
+      totalPages: 1,
+      totalResults: 0,
+      resultsPerPage: 0,
+      nextPage: null,
+      previousPage: null,
+      data: [],
+    };
     vi.mocked(useEmployees).mockReturnValue({
-      data: employees,
+      data: emptyEmployeesResponse,
       isLoading: true,
       isError: false,
     } as any);
@@ -234,15 +262,26 @@ describe("Homepage", () => {
     );
     // act
     const loading = screen.getByText("Loading: true");
+    const header = screen.getByTestId("mock-header");
     // assert
     expect(loading).toBeInTheDocument();
+    expect(header).toHaveTextContent("0 employees");
   });
 
   it("Should pass empty employees to children components when no employees received", () => {
     // arrange
-    vi.mocked(useEmployees).mockReturnValue({
+    const emptyEmployeesResponse = {
+      currentPage: 1,
+      totalPages: 1,
+      totalResults: 0,
+      resultsPerPage: 0,
+      nextPage: null,
+      previousPage: null,
       data: [],
-      isLoading: true,
+    };
+    vi.mocked(useEmployees).mockReturnValue({
+      data: emptyEmployeesResponse,
+      isLoading: false,
       isError: false,
     } as any);
     render(
@@ -363,11 +402,13 @@ describe("Homepage", () => {
     const searchBtn = screen.getByTestId("name-searchBy");
     await user.click(searchBtn);
     // assert
-    expect(useEmployees).toHaveBeenCalledTimes(2);
-    const locationDisplay = screen.getByTestId("location-display");
-    expect(locationDisplay).toHaveTextContent(
-      "?search=Alex&searchBy=firstName",
-    );
+    await waitFor(() => {
+      expect(useEmployees).toHaveBeenCalledTimes(2);
+      const locationDisplay = screen.getByTestId("location-display");
+      expect(locationDisplay).toHaveTextContent(
+        "?search=Alex&searchBy=firstName",
+      );
+    });
   });
 
   it("Should update the URL with new search parameters on multiple searches", async () => {

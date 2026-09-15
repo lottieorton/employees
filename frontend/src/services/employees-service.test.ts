@@ -140,33 +140,43 @@ describe("employees service", () => {
     isCurrentlyEmployed: true,
   };
 
+  const mockEmployeesResponse = {
+    currentPage: 1,
+    totalPages: 1,
+    totalResults: 2,
+    resultsPerPage: 10,
+    nextPage: null,
+    previousPage: null,
+    data: mockEmployees,
+  };
+
   describe("getAllEmployees", () => {
-    it("Should return an array of employees on successful fetch with no search query", async () => {
+    it("Should return a page of employees on successful fetch with no search query", async () => {
       // arrange
       vi.spyOn(window, "fetch").mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => mockEmployees,
+        json: async () => mockEmployeesResponse,
       } as Response);
       // act
       const result = await getAllEmployees();
       // assert
-      expect(result).toEqual(mockEmployees);
+      expect(result).toEqual(mockEmployeesResponse);
       expect(fetch).toHaveBeenCalledWith("http://localhost:8080/employees");
     });
 
-    it("Should return an array of employees on successful fetch with search query", async () => {
+    it("Should return a page of employees on successful fetch with search query", async () => {
       // arrange
       vi.spyOn(window, "fetch").mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: async () => mockEmployees,
+        json: async () => mockEmployeesResponse,
       } as Response);
       const mockSearchQuery = { search: "Software Developer" };
       // act
       const result = await getAllEmployees(mockSearchQuery);
       // assert
-      expect(result).toEqual(mockEmployees);
+      expect(result).toEqual(mockEmployeesResponse);
       expect(fetch).toHaveBeenCalledWith(
         "http://localhost:8080/employees?search=Software+Developer",
       );
@@ -210,9 +220,9 @@ describe("employees service", () => {
       expect(fetch).toHaveBeenCalledWith("http://localhost:8080/employees/1");
     });
 
-    it("Should throw and error if no id provided", async () => {
+    it("Should throw an error if no id provided", async () => {
       // assert
-      await expect(getEmployeeById).rejects.toThrow("Invalid employee ID");
+      await expect(getEmployeeById()).rejects.toThrow("Invalid employee ID");
       expect(fetch).not.toHaveBeenCalled();
     });
 
@@ -250,6 +260,11 @@ describe("employees service", () => {
       // act
       const result = await createEmployee(mockFormData);
       // assert
+      expect(fetch).toHaveBeenCalledWith("http://localhost:8080/employees", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(mockFormData),
+      });
       expect(result).toEqual(mockEmployee);
     });
 
@@ -315,6 +330,11 @@ describe("employees service", () => {
       // act
       const result = await updateEmployee(1, mockFormData);
       // assert
+      expect(fetch).toHaveBeenCalledWith("http://localhost:8080/employees/1", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(mockFormData),
+      });
       expect(result).toEqual(mockEmployee);
     });
 
@@ -379,6 +399,9 @@ describe("employees service", () => {
       // act
       const result = await deleteEmployee(1);
       // assert
+      expect(fetch).toHaveBeenCalledWith("http://localhost:8080/employees/1", {
+        method: "DELETE",
+      });
       expect(result).toEqual(true);
     });
 
