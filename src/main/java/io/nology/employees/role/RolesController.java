@@ -13,6 +13,8 @@ import jakarta.validation.Valid;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Tag(name = "Roles Controller")
 public class RolesController {
     private final RoleService roleService;
+    private final Logger log = LogManager.getLogger(RolesController.class);
 
     public RolesController(RoleService roleService) {
         this.roleService = roleService;
@@ -48,6 +51,7 @@ public class RolesController {
     @PostMapping()
     public ResponseEntity<RoleResponse> createRole(@Valid @RequestBody CreateRoleRequest data) {
         Role result = this.roleService.create(data);
+        log.info("Successfully created new role with ID: {}", result.getId());
         return new ResponseEntity<RoleResponse>(RoleResponse.of(result), HttpStatus.CREATED);
     }
 
@@ -55,6 +59,7 @@ public class RolesController {
     public ResponseEntity<RoleResponse> updateRoleById(@PathVariable Long id, @Valid @RequestBody UpdateRoleRequest data) {
         Role result = this.roleService.updateById(id, data)
         .orElseThrow(() -> new NotFoundException("Could not find role with id " + id));
+        log.info("Successfully updated role with ID: {}", id);
         return ResponseEntity.ok(RoleResponse.of(result));
     }
 
@@ -62,6 +67,7 @@ public class RolesController {
     public ResponseEntity<Void> deleteRoleById(@PathVariable Long id) {
         boolean isDeleted = this.roleService.deleteById(id);
         if(isDeleted) {
+            log.info("Successfully deleted role with ID: {}", id);
             return ResponseEntity.noContent().build();
         }
         throw new NotFoundException("Could not find role with id " + id);

@@ -13,6 +13,8 @@ import jakarta.validation.Valid;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class AddressesController {
     
     private final AddressService addressService;
+    private final Logger log = LogManager.getLogger(AddressesController.class); 
 
     public AddressesController(AddressService addressService) {
         this.addressService = addressService;
@@ -49,6 +52,7 @@ public class AddressesController {
     @PostMapping()
     public ResponseEntity<AddressResponse> createAddress(@Valid @RequestBody CreateAddressRequest data) {
         Address result = this.addressService.create(data);
+        log.info("Successfully created new address with ID: {}", result.getId());
         return new ResponseEntity<AddressResponse>(AddressResponse.of(result), HttpStatus.CREATED);
     }
 
@@ -56,6 +60,7 @@ public class AddressesController {
     public ResponseEntity<AddressResponse> updateAddressById(@PathVariable Long id, @Valid @RequestBody UpdateAddressRequest data) {
         Address result = this.addressService.updateById(id, data)
         .orElseThrow(() -> new NotFoundException("Could not find address with id " + id));
+        log.info("Successfully updated address with ID: {}", id);
         return ResponseEntity.ok(AddressResponse.of(result));
     }
 
@@ -63,6 +68,7 @@ public class AddressesController {
     public ResponseEntity<Void> deleteAddressById(@PathVariable Long id) {
         boolean isDeleted = this.addressService.deleteById(id);
         if(isDeleted) {
+            log.info("Successfully deleted address with ID: {}", id);
             return ResponseEntity.noContent().build();
         }
         throw new NotFoundException("Could not find address with id " + id);

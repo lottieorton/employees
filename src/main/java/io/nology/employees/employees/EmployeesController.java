@@ -16,6 +16,8 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,17 +33,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Tag(name = "Employees Controller")
 public class EmployeesController {
     private final EmployeeService employeeService;
+    private final Logger log = LogManager.getLogger(EmployeesController.class);
 
-    public EmployeesController(EmployeeService employeeService, EmployeeRepository employeeRepository) {
+    public EmployeesController(EmployeeService employeeService) {
         this.employeeService = employeeService;
     }
 
     @GetMapping()
     public ResponseEntity<List<EmployeeResponse>> findAllEmployees(@ModelAttribute FindEmployeesQueryDto queryDto) {
         List<Employee> allEmployees = this.employeeService.findAll(queryDto);
+        if(queryDto.hasFilters()) {
+            log.info("Fetching employees with filters: {}", queryDto);
+        }
         return ResponseEntity.ok(EmployeeResponse.of(allEmployees));
     }
-
+    
     @GetMapping("/{id}")
     public ResponseEntity<EmployeeResponse> findEmployeeById(@PathVariable Long id) {
         Employee result = this.employeeService.findById(id)
@@ -52,6 +58,7 @@ public class EmployeesController {
     @PostMapping()
     public ResponseEntity<EmployeeResponse> createEmployee(@Valid @RequestBody CreateEmployeeRequest data) {
         Employee result = this.employeeService.create(data);
+        log.info("Successfully created new employee with ID: {}", result.getId());
         return new ResponseEntity<EmployeeResponse>(EmployeeResponse.of(result), HttpStatus.CREATED);
     }
     
@@ -59,6 +66,7 @@ public class EmployeesController {
     public ResponseEntity<EmployeeResponse> updateEmployeeById(@PathVariable Long id, @Valid @RequestBody UpdateEmployeeRequest data) {
         Employee result = this.employeeService.updateById(id, data)
         .orElseThrow(() -> new NotFoundException("Could not find employee with id " + id));
+        log.info("Successfully updated employee with ID: {}", id);
         return ResponseEntity.ok(EmployeeResponse.of(result));
     }
     
@@ -66,6 +74,7 @@ public class EmployeesController {
     public ResponseEntity<Void> deleteEmployeeById(@PathVariable Long id) {
         boolean isDeleted = this.employeeService.deleteById(id);
         if(isDeleted) {
+            log.info("Successfully deleted employee with ID: {}", id);
             return ResponseEntity.noContent().build();
         }
         throw new NotFoundException("Could not find employee with id " + id);
