@@ -3,27 +3,49 @@ import EmployeeList from "../../EmployeeList/EmployeeList";
 import Header from "../../Header/Header";
 import SearchBar from "../../SearchBar/SearchBar";
 import { useEmployees } from "../../../hooks/useEmployees";
-import type { SearchQuery } from "../../../interfaces/SearchQuery";
+import {
+  isSearchField,
+  type SearchQuery,
+} from "../../../interfaces/SearchQuery";
 import { useSearchParams } from "react-router-dom";
+import type { Employees } from "../../../interfaces/Employee";
+import Pagination from "../../Pagination/Pagination";
+
+const defaultEmployeesResponse: Employees = {
+  currentPage: 1,
+  totalPages: 1,
+  totalResults: 0,
+  resultsPerPage: 10,
+  nextPage: null,
+  previousPage: null,
+  data: [],
+};
 
 export default function Homepage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTerm = searchParams.get("search") || "";
   const searchBy = searchParams.get("searchBy") || "search";
+  const rawPage = searchParams.get("page");
+  const page =
+    rawPage && !isNaN(Number(rawPage)) ? Math.max(1, parseInt(rawPage)) : 1;
 
   const searchQuery = useMemo(() => {
-    const query: SearchQuery = {};
-    if (searchTerm.trim() !== "") {
+    const query: SearchQuery = {
+      page,
+    };
+    if (searchTerm.trim() !== "" && isSearchField(searchBy)) {
       query[searchBy] = searchTerm;
     }
     return query;
-  }, [searchTerm, searchBy]);
+  }, [searchTerm, searchBy, page]);
 
   const {
-    data: employees = [],
+    data: employees = defaultEmployeesResponse,
     isLoading,
     isError,
   } = useEmployees(searchQuery);
+
+  const { data, ...paginationProps } = employees;
 
   const handleSearchUpdate = (term: string, by: string) => {
     setSearchParams((prev) => {
@@ -40,24 +62,42 @@ export default function Homepage() {
       } else {
         newParams.delete("searchBy");
       }
+
+      newParams.delete("page");
+      return Object.fromEntries(newParams);
+    });
+  };
+
+  const handlePageChange = (newPage: string) => {
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+
+      newParams.set("page", newPage);
+
       return Object.fromEntries(newParams);
     });
   };
 
   return (
     <section className="w-full flex flex-col gap-5 3xl:gap-7">
-      <Header numEmployees={employees.length} />
+      <Header numEmployees={employees.totalResults} />
       <SearchBar
         initialSearchValue={searchTerm}
         initialSearchByValue={searchBy}
         handleSearch={handleSearchUpdate}
       />
-      <EmployeeList
-        searchTerm={searchTerm}
-        employees={employees}
-        isLoading={isLoading}
-        isError={isError}
-      />
+      <div>
+        <EmployeeList
+          searchTerm={searchTerm}
+          employees={data}
+          isLoading={isLoading}
+          isError={isError}
+        />
+        <Pagination
+          pagination={paginationProps}
+          handlePageChange={handlePageChange}
+        />
+      </div>
     </section>
   );
 }

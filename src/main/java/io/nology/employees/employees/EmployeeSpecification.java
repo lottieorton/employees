@@ -6,14 +6,14 @@ import java.util.List;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import io.nology.employees.employees.dtos.FindEmployeesQueryDto;
+import io.nology.employees.employees.dtos.FindEmployeesQueryParams;
 import io.nology.employees.employees.entities.Employee;
 import io.nology.employees.employees.entities.EmploymentType;
 import io.nology.employees.employees.entities.WorkSetup;
 import jakarta.persistence.criteria.Predicate;
 
 public class EmployeeSpecification {
-    public static Specification<Employee> withDynamicQuery(FindEmployeesQueryDto query) {
+    public static Specification<Employee> withDynamicQuery(FindEmployeesQueryParams query) {
         return (root, criteriaQuery, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 

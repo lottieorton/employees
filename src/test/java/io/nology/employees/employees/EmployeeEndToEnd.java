@@ -8,6 +8,8 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.jdbc.Sql;
 
+import com.github.javafaker.Faker;
+
 import io.nology.employees.address.AddressRepository;
 import io.nology.employees.address.entities.Address;
 import io.nology.employees.employees.dtos.CreateEmployeeRequest;
@@ -27,8 +29,12 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
 import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(scripts = "/sql/cleanup.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
@@ -140,31 +146,117 @@ public class EmployeeEndToEnd {
         );
     }
 
+    private void createEmployees(int count) {
+        Faker faker = new Faker();
+        for (int i = 0; i < count; i++) {
+            Address a = createAndSaveAddress(faker.address().streetAddressNumber(), faker.address().streetAddress(), faker.address().city(), faker.address().stateAbbr(), faker.address().zipCode());
+            Role r = createAndSaveRole(faker.job().title(), SeniorityLevel.JUNIOR, Department.ENGINEERING);
+            Employee e = createEmployee(faker.name().firstName(), faker.name().lastName(), faker.name().firstName(), Pronouns.THEY_THEM, faker.name().firstName(), faker.internet().emailAddress(), faker.phoneNumber().phoneNumber(), a, r, null, WorkSetup.HYBRID, EmploymentType.FULL_TIME_PERMANENT, faker.date().past(1000, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), null, true);
+            this.employeeRepo.saveAndFlush(e);
+        }
+    } 
+
     // getAll
 
     @Test
-    public void getAllEmployees_NoEmployees_ReturnsOKAndEmptyArray() {
-        // act
-        given().when().get("/employees")
-        // assert
-        .then().statusCode(HttpStatus.OK.value())
-        .body("$", hasSize(0));
-    }
-
-    @Test
-    public void getAllEmployees_EmployeesInDB_ReturnsOKAndArrayOfEmployees() {
+    public void getAllEmployees_EmployeesInDBWithDefaultRequest_ReturnsOKAndPageOfEmployeesWithDefaultSettings() {
         // arrange
-        Employee employee1 = createSarah();
-        this.employeeRepo.saveAndFlush(employee1);
-        Employee employee2 = createAlex(employee1);
-        this.employeeRepo.saveAndFlush(employee2);
+        createEmployees(20);
         //act
         given().when().get("/employees")
         // assert
         .then().statusCode(HttpStatus.OK.value())
-        .body("$", hasSize(2))
-        .body("firstName", hasItems("Sarah", "Alex"))
-        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+        .body("currentPage", equalTo(1))
+        .body("totalPages", equalTo(2))
+        .body("resultsPerPage", equalTo(10))
+        .body("totalResults", equalTo(20))
+        .body("nextPage", equalTo(2))
+        .body("previousPage", equalTo(null))
+        .body("data", hasSize(10))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
+    }
+
+    @Test
+    public void getAllEmployees_EmployeesInDBWithPaginationRequest_ReturnsOKAndPageOfEmployeesWithProvidedPaginationSetup() {
+        // arrange
+        createEmployees(25);
+        //act
+        given().when().get("/employees?size=5&page=3")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("currentPage", equalTo(3))
+        .body("totalPages", equalTo(5))
+        .body("resultsPerPage", equalTo(5))
+        .body("totalResults", equalTo(25))
+        .body("nextPage", equalTo(4))
+        .body("previousPage", equalTo(2))
+        .body("data", hasSize(5))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
+    }
+
+    @Test
+    public void getAllEmployees_RequestWithUnpagedFlag_ReturnsOKAndPageOfAllEmployees() {
+        // arrange
+        createEmployees(22);
+        //act
+        given().when().get("/employees?unpaged=true")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("currentPage", equalTo(1))
+        .body("totalPages", equalTo(1))
+        .body("resultsPerPage", equalTo(22))
+        .body("totalResults", equalTo(22))
+        .body("nextPage", equalTo(null))
+        .body("previousPage", equalTo(null))
+        .body("data", hasSize(22))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
+    }
+
+    @Test
+    public void getAllEmployees_NoEmployees_ReturnsOKAndEmptyPage() {
+        // act
+        given().when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("totalResults", equalTo(0))
+        .body("nextPage", equalTo(null))
+        .body("previousPage", equalTo(null))
+        .body("data", hasSize(0))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
+
+    }
+
+    @Test
+    public void getAllEmployees_InvalidDTO_ReturnsBadRequest() {
+        //act
+        given().when().get("/employees?size=50&page=-1")
+        // assert
+        .then().statusCode(HttpStatus.BAD_REQUEST.value())
+        .body("error", equalTo("Bad Request"))
+        .body(matchesJsonSchemaInClasspath("schemas/api-error-schema.json")); 
+    }
+
+    @Test
+    public void getAllEmployees_PageNumberTooLarge_ReturnsBadRequest() {
+        // arrange
+        createEmployees(20);
+        //act
+        given().when().get("/employees?page=4")
+        // assert
+        .then().statusCode(HttpStatus.UNPROCESSABLE_CONTENT.value())
+        .body("error", equalTo("Unprocessable Content"))
+        .body("message", equalTo("Page number is too high"))
+        .body(matchesJsonSchemaInClasspath("schemas/api-error-schema.json")); 
+    }
+
+    @Test
+    public void getAllEmployees_ReturnsEmployeesSortedByIdAscending() {
+        createEmployees(10);
+        List<Integer> actualIds = given().when()
+            .get("/employees")
+            .then().statusCode(HttpStatus.OK.value())
+            .extract().jsonPath().getList("data.id", Integer.class);
+        assertThat(actualIds).isSorted();
     }
 
     // getAll - search queries
@@ -180,9 +272,9 @@ public class EmployeeEndToEnd {
         .when().get("/employees")
         // assert
         .then().statusCode(HttpStatus.OK.value())
-        .body("$", hasSize(1))
-        .body("firstName", hasItem("Sarah"))
-        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+        .body("data", hasSize(1))
+        .body("data.firstName", hasItem("Sarah"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
     }
 
     @Test
@@ -196,9 +288,9 @@ public class EmployeeEndToEnd {
         .when().get("/employees")
         // assert
         .then().statusCode(HttpStatus.OK.value())
-        .body("$", hasSize(1))
-        .body("firstName", hasItem("Sarah"))
-        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+        .body("data", hasSize(1))
+        .body("data.firstName", hasItem("Sarah"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
     }
 
     @Test
@@ -212,9 +304,9 @@ public class EmployeeEndToEnd {
         .when().get("/employees")
         // assert
         .then().statusCode(HttpStatus.OK.value())
-        .body("$", hasSize(1))
-        .body("firstName", hasItem("Alex"))
-        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+        .body("data", hasSize(1))
+        .body("data.firstName", hasItem("Alex"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
     }
 
     @Test
@@ -228,9 +320,9 @@ public class EmployeeEndToEnd {
         .when().get("/employees")
         // assert
         .then().statusCode(HttpStatus.OK.value())
-        .body("$", hasSize(1))
-        .body("firstName", hasItem("Alex"))
-        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+        .body("data", hasSize(1))
+        .body("data.firstName", hasItem("Alex"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
     }
     
      @Test
@@ -244,9 +336,9 @@ public class EmployeeEndToEnd {
         .when().get("/employees")
         // assert
         .then().statusCode(HttpStatus.OK.value())
-        .body("$", hasSize(1))
-        .body("firstName", hasItem("Sarah"))
-        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+        .body("data", hasSize(1))
+        .body("data.firstName", hasItem("Sarah"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
     }
     
     @Test
@@ -260,13 +352,13 @@ public class EmployeeEndToEnd {
         .when().get("/employees")
         // assert
         .then().statusCode(HttpStatus.OK.value())
-        .body("$", hasSize(1))
-        .body("firstName", hasItem("Sarah"))
-        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+        .body("data", hasSize(1))
+        .body("data.firstName", hasItem("Sarah"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
     }
     
     @Test
-    public void getAllEmployees_NoMatches_ReturnsEmptyArray() {
+    public void getAllEmployees_NoMatches_ReturnsEmptyPage() {
         Employee employee1 = createSarah();
         this.employeeRepo.saveAndFlush(employee1);
         Employee employee2 = createAlex(employee1);
@@ -276,7 +368,8 @@ public class EmployeeEndToEnd {
         .when().get("/employees")
         // assert
         .then().statusCode(HttpStatus.OK.value())
-        .body("$", hasSize(0));
+        .body("totalResults", equalTo(0))
+        .body("data", hasSize(0));
     }
 
     // getAll - specific query
@@ -292,9 +385,9 @@ public class EmployeeEndToEnd {
         .when().get("/employees")
         // assert
         .then().statusCode(HttpStatus.OK.value())
-        .body("$", hasSize(1))
-        .body("firstName", hasItem("Sarah"))
-        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+        .body("data", hasSize(1))
+        .body("data.firstName", hasItem("Sarah"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
     }
     
     @Test
@@ -308,9 +401,9 @@ public class EmployeeEndToEnd {
         .when().get("/employees")
         // assert
         .then().statusCode(HttpStatus.OK.value())
-        .body("$", hasSize(1))
-        .body("firstName", hasItem("Alex"))
-        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+        .body("data", hasSize(1))
+        .body("data.firstName", hasItem("Alex"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
     }
     
     @Test
@@ -325,9 +418,9 @@ public class EmployeeEndToEnd {
         .when().get("/employees")
         // assert
         .then().statusCode(HttpStatus.OK.value())
-        .body("$", hasSize(1))
-        .body("firstName", hasItem("Alex"))
-        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+        .body("data", hasSize(1))
+        .body("data.firstName", hasItem("Alex"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
     }
 
     @Test
@@ -341,9 +434,9 @@ public class EmployeeEndToEnd {
         .when().get("/employees")
         // assert
         .then().statusCode(HttpStatus.OK.value())
-        .body("$", hasSize(1))
-        .body("firstName", hasItem("Sarah"))
-        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+        .body("data", hasSize(1))
+        .body("data.firstName", hasItem("Sarah"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
     }
     
     @Test
@@ -357,9 +450,9 @@ public class EmployeeEndToEnd {
         .when().get("/employees")
         // assert
         .then().statusCode(HttpStatus.OK.value())
-        .body("$", hasSize(1))
-        .body("firstName", hasItem("Sarah"))
-        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+        .body("data", hasSize(1))
+        .body("data.firstName", hasItem("Sarah"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
     }
     
     @Test
@@ -373,12 +466,57 @@ public class EmployeeEndToEnd {
         .when().get("/employees")
         // assert
         .then().statusCode(HttpStatus.OK.value())
-        .body("$", hasSize(2))
-        .body("firstName", hasItems("Sarah", "Alex"))
-        .body(matchesJsonSchemaInClasspath("schemas/employee-list-schema.json")); 
+        .body("data", hasSize(2))
+        .body("data.firstName", hasItems("Sarah", "Alex"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
     }
 
-    
+    @Test
+    public void getAllEmployees_InvalidDateFormat_ReturnsBadRequest() {
+        // act
+        given().param("startDateFrom", "01-01-2021")
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.BAD_REQUEST.value())
+        .body("error", equalTo("Bad Request"))
+        .body(matchesJsonSchemaInClasspath("schemas/api-error-schema.json"));
+    }
+
+    @Test
+    public void getAllEmployees_MultipleCombinedFilters_ReturnsMatchingEmployee() {
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        this.employeeRepo.saveAndFlush(employee2);
+        // act
+        given().param("workSetup", "ON_SITE")
+        .param("isCurrentlyEmployed", "true")
+        .param("roleName", "Senior")
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("data", hasSize(1))
+        .body("data.firstName", hasItem("Sarah"))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
+    }
+
+    @Test
+    public void getAllEmployees_ConflictingCombinedFilters_ReturnsEmptyPage() {
+        Employee employee1 = createSarah();
+        this.employeeRepo.saveAndFlush(employee1);
+        Employee employee2 = createAlex(employee1);
+        this.employeeRepo.saveAndFlush(employee2);
+        // act
+        given().param("workSetup", "HYBRID")
+        .param("roleName", "Senior")
+        .when().get("/employees")
+        // assert
+        .then().statusCode(HttpStatus.OK.value())
+        .body("totalResults", equalTo(0))
+        .body("data", hasSize(0))
+        .body(matchesJsonSchemaInClasspath("schemas/employee-page-schema.json")); 
+    }
+
     // getById
 
     @Test
@@ -407,7 +545,7 @@ public class EmployeeEndToEnd {
     }
 
     @Test
-    public void getEmployeeById_InvlaidIdType_ReturnsBadRequest() {
+    public void getEmployeeById_InvalidIdType_ReturnsBadRequest() {
          //act
         given().when().get("/employees/a")
         // assert

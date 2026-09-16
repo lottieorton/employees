@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { dropdownOptions } from "../../interfaces/SearchQuery";
 
 interface SearchBarProps {
   initialSearchValue: string;
@@ -26,14 +27,6 @@ export default function SearchBar({
 
     return () => clearTimeout(timeout);
   }, [input, selectedSearchBy]);
-
-  const dropdownOptions = [
-    { value: "search", text: "Search by..." },
-    { value: "firstName", text: "First Name" },
-    { value: "lastName", text: "Last Name" },
-    { value: "emailAddress", text: "Email Address" },
-    { value: "roleName", text: "Role" },
-  ];
 
   const handleSearchByChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedSearchBy(e.target.value);

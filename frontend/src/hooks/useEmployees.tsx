@@ -1,10 +1,11 @@
 import {
+  keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
   type UseQueryOptions,
 } from "@tanstack/react-query";
-import type { Employee } from "../interfaces/Employee";
+import type { Employee, Employees } from "../interfaces/Employee";
 import {
   createEmployee,
   deleteEmployee,
@@ -19,9 +20,10 @@ import { deleteAddress } from "../services/addresses-service";
 export const EMPLOYEES_KEY = "employees";
 
 export function useEmployees(searchQuery?: SearchQuery) {
-  return useQuery<Employee[]>({
+  return useQuery<Employees>({
     queryKey: [EMPLOYEES_KEY, searchQuery],
     queryFn: () => getAllEmployees(searchQuery),
+    placeholderData: keepPreviousData,
   });
 }
 

@@ -6,7 +6,10 @@ import { getAllRoles } from "../services/roles-service";
 import { useEmployees } from "./useEmployees";
 import type { FormOption, FormOptions } from "../interfaces/formInterfaces";
 import { getEmployeeFormEnums } from "../services/employees-service";
-import type { Employee } from "../interfaces/Employee";
+import type { Employee, Employees } from "../interfaces/Employee";
+import type { SearchQuery } from "../interfaces/SearchQuery";
+
+const query: SearchQuery = { unpaged: true };
 
 export function useEmployeeFormOptions(
   control: Control<FormValues>,
@@ -31,11 +34,22 @@ export function useEmployeeFormOptions(
   const selectedDepartment = useWatch({ control, name: "department" });
 
   // Employees
+
+  const defaultEmployeesResponse: Employees = {
+    currentPage: 1,
+    totalPages: 1,
+    totalResults: 0,
+    resultsPerPage: 10,
+    nextPage: null,
+    previousPage: null,
+    data: [],
+  };
+
   const {
-    data: employees = [],
+    data: employees = defaultEmployeesResponse,
     isFetching: isEmployeesFetching,
     isError: isEmployeesError,
-  } = useEmployees();
+  } = useEmployees(query);
 
   // Roles fetching
   useEffect(() => {
@@ -118,7 +132,7 @@ export function useEmployeeFormOptions(
   };
 
   // Return formatted list of employees whilst filtering out the current employee
-  const managerOptions = employees
+  const managerOptions = employees.data
     .filter((e) => !currentEmployee || currentEmployee.id !== e.id)
     .map((e) => {
       return {

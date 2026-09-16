@@ -1,9 +1,12 @@
 package io.nology.employees.employees;
 
+import io.nology.employees.common.PageResponseAssember;
+import io.nology.employees.common.dtos.PageResponse;
 import io.nology.employees.common.exceptions.NotFoundException;
+import io.nology.employees.common.exceptions.UnprocessableContentException;
 import io.nology.employees.employees.dtos.CreateEmployeeRequest;
 import io.nology.employees.employees.dtos.EmployeeResponse;
-import io.nology.employees.employees.dtos.FindEmployeesQueryDto;
+import io.nology.employees.employees.dtos.FindEmployeesQueryParams;
 import io.nology.employees.employees.dtos.UpdateEmployeeRequest;
 import io.nology.employees.employees.entities.Employee;
 
@@ -18,6 +21,11 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -40,12 +48,25 @@ public class EmployeesController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<EmployeeResponse>> findAllEmployees(@ModelAttribute FindEmployeesQueryDto queryDto) {
-        List<Employee> allEmployees = this.employeeService.findAll(queryDto);
-        if(queryDto.hasFilters()) {
-            log.info("Fetching employees with filters: {}", queryDto);
+    public ResponseEntity<PageResponse<EmployeeResponse>> findAllEmployees(@Valid @ModelAttribute FindEmployeesQueryParams params) {
+        // Checks if Pagination should be applied or not
+        Pageable pageable;
+        if(params.isUnpaged()) {
+            pageable = Pageable.unpaged();
+        } else {
+            pageable = PageRequest.of(params.getPage() - 1, params.getSize(), Sort.by("id").ascending());
         }
-        return ResponseEntity.ok(EmployeeResponse.of(allEmployees));
+        
+        Specification<Employee> spec = EmployeeSpecification.withDynamicQuery(params);
+        Page<Employee> employeePage = this.employeeService.findAll(spec, pageable);
+
+        if(!pageable.isUnpaged() && params.getPage() > 1 && employeePage.getTotalPages() < params.getPage()) {
+            throw new UnprocessableContentException("Page number is too high");
+        }
+        
+        PageResponse<EmployeeResponse> response = PageResponseAssember.toPageResponse(employeePage, EmployeeResponse::of);
+        log.info("Fetching employees with params: {}", params);
+        return ResponseEntity.ok(response);
     }
     
     @GetMapping("/{id}")
