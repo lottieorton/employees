@@ -160,6 +160,8 @@ SPRING_PROFILE=dev
 - **Form Validation:** Form validation is implemented prior to form submission, with clear error messaging to enhance user experience and minimise bad requests to the backend.
 - **Dynamic Querying:** Employee searches can be automatically done through a general search (checking against multiple fields in the database) or through specific field searches.
 - **Unique Email Generation:** Upon creating an employee, a unique email is generated, preserving the unique constraint placed on the employees table.
+- **Backend Logging:** Log4j configuration to record application activity and smoke testing.
+- **Pagination:** Pagination functionality implemented (optionally) across the full stack.
 
 ---
 
@@ -172,35 +174,34 @@ SPRING_PROFILE=dev
 ## Future Goals
 
 - **Frontend Testing:** Create end-to-end testing suites.
-- **Backend Logging:** Implement a Log4j configuration to record application activity.
-- **Pagination:** Implement pagination functionality across the full stack.
 - **Search Filtering:** Implement employee filtering with dropdowns menus on the frontend.
+- **Page size selection:** Implement page size through a dropdown on the frontend.
 - **Multipage Form:** Update the employee form to be spread over multiple pages.
 - **Manager/Subordinate Linking:** Add links between managers and their direct reports on the employee details page.
 - **Soft Delete:** Implement a soft-delete feature so inactive employees are filtered out by default, while remaining accessible via an explicit filter.
-- **Refactor Employee-Address Relationship:** Address has an associated employee (current relationship is reversed)
-- **Contracts Endpoint:** Introduce a separate contracts table, with employees having multiple contracts and refactoring of role-employee relationship
+- **Refactor Employee-Address Relationship:** Address has an associated employee (current relationship is reversed).
+- **Contracts Endpoint:** Introduce a separate contracts table, with employees having multiple contracts and refactoring of role-employee relationship.
 
 ---
 
 ## Change Logs
 
-**19/08/2026:** Initial project set up
+**19/08/2026:** Initial Project Set Up
 
 - Created Spring Boot application
 - Base React Header components Created
 
-**20/08/2026:** Front-end mobile styling
+**20/08/2026:** Frontend Mobile Styling
 
 - Implemented main frontend components with mobile-focussed styling
 
-**21/08/2026:** Roles and addresses endpoints and backend configuration
+**21/08/2026:** Roles and Addresses Endpoints and Backend Configuration
 
 - Configured database connection, error handling and model mapper
 - Implemented roles CRUD endpoints
 - Implemented addresses CRUD endpoints
 
-**22/08/2026:** Employee endpoints
+**22/08/2026:** Employee Endpoints
 
 - Implemented employee endpoints
 
@@ -208,7 +209,7 @@ SPRING_PROFILE=dev
 
 - Implemented service tests and end-to-end tests across roles, addresses, employees
 
-**25/08/2026:** Dynamic Query Searches, routing and responsive fields
+**25/08/2026:** Dynamic Query Searches, Routing and Responsive Fields
 
 - Implemented dynamic query searching for employees through Specifications
 - Added application license
@@ -217,7 +218,7 @@ SPRING_PROFILE=dev
 - Added responsive styling
 - Form field components for the different field types
 
-**26/08/2026:** Homepage and employee page base setup
+**26/08/2026:** Homepage and Employee Page Base Setup
 
 - Base homepage, employee page (details and form) setup
 - Configured connection from backend to frontend
@@ -225,32 +226,55 @@ SPRING_PROFILE=dev
 - Implemented employees fetching error handling
 - Updated employee form and added base validation
 
-**27/08/2026:** Consumed additional endpoints for the employee page and form
+**27/08/2026:** Consumed Additional Endpoints
 
 - Consumed getEmployeeById, getAllRoles, and createEmployee (with default address id) endpoints
 - Applied styling to employee details page
 - Created and consumed enum endpoint for form selections
 
-**28/08/2026:** Consumed update and delete endpoints
+**28/08/2026:** Consumed Update and Delete Endpoints
 
 - Updated implementation of create employee page
 - Consumed update and delete employee endpoints
 - Consumed update and delete address endpoints
 
-**31/08/2026:** State handling and specific field searches
+**31/08/2026:** State Handling and Specific Field Searches
 
 - Implemented complete error and loading state handling
 - Implemented specific field search bar functionality
 - Refactored employee form and styling
 
-**02/09/26:** React Component testing
+**02/09/26:** React Component Testing
 
 - Added Vitest configuration
 - Implemented many React unit testing suites for components
 
-**03/09/2026:** React Unit Testing Contnued
+**03/09/2026:** React Unit Testing Expansion & CI/CD Pipeline
 
-- Implemented the remaining React unit testing suites
+- Implemented additional React unit testing suites
+- Configured the frontend CI/CD pipeline for automated deployments
+
+**09/09/2026:** Address Field Refactoring and Updated Seeders
+
+- Refactored the address Unit Number field to be optional
+- Updated database seeders with additional entry creation
+
+**10/09/2026:** URL-Synchronized State Management
+
+- Integrated search parameters directly into the URL for seamless state persistence
+
+**15/09/2026:** Backend Pagination & Production Logging
+
+- Configured a comprehensive backend logging strategy using Log4j2
+- Created a smoke test script to verify application performance under high volumes of simultaneous employee fetch requests
+- Implemented backend pagination to optimise data loading
+- Scaled up automated test data generation using Faker
+
+**16/09/2026:** Frontend Pagination & Form Enum Testing
+
+- Scaled up automated data generation using Faker within the seeders
+- Implemented fully responsive frontend pagination paired with automatic scroll-to-top behavior
+- Added comprehensive unit tests for fetching form enums
 
 ---
 
