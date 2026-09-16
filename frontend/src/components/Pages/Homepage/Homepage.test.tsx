@@ -94,6 +94,46 @@ vi.mock("../../SearchBar/SearchBar", () => ({
   ),
 }));
 
+vi.mock("../../Pagination/Pagination", () => ({
+  default: ({
+    pagination,
+    handlePageChange,
+  }: {
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalResults: number;
+      resultsPerPage: number;
+      nextPage: number | null;
+      previousPage: number | null;
+    };
+    handlePageChange: (newPage: string) => void;
+  }) => (
+    <div data-testid="mock-pagination">
+      <p>{`Current Page: ${pagination.currentPage}`}</p>
+      <p>{`Total Results: ${pagination.totalResults}`}</p>
+      <button
+        data-testid="next-page-btn"
+        onClick={() => {
+          if (pagination.nextPage !== null) {
+            handlePageChange(pagination.nextPage.toString());
+          }
+        }}
+      >
+        Next Page
+      </button>
+      <button
+        data-testid="invalid-page-btn"
+        onClick={() => {
+          handlePageChange("invalid");
+        }}
+      >
+        Invalid Page
+      </button>
+    </div>
+  ),
+}));
+
 describe("Homepage", () => {
   const employees = [
     {
@@ -208,6 +248,8 @@ describe("Homepage", () => {
     const searchBarInitialSearchBy = screen.getByText(
       "Initial searchBy: search",
     );
+    const paginationCurrentPage = screen.getByText("Current Page: 1");
+    const paginationTotalResults = screen.getByText("Total Results: 2");
     // assert
     expect(header).toHaveTextContent("2 employees");
     expect(searchTerm).toBeInTheDocument();
@@ -218,6 +260,8 @@ describe("Homepage", () => {
     expect(employees[1]).toHaveTextContent("2: Alex");
     expect(searchBarInitialTerm).toBeInTheDocument();
     expect(searchBarInitialSearchBy).toBeInTheDocument();
+    expect(paginationCurrentPage).toBeInTheDocument();
+    expect(paginationTotalResults).toBeInTheDocument();
   });
 
   it("Should pass error to children components when there is an error fetching employees", () => {
@@ -312,7 +356,7 @@ describe("Homepage", () => {
     );
     // assert
     expect(useEmployees).toHaveBeenCalledTimes(1);
-    expect(useEmployees).toHaveBeenCalledWith({});
+    expect(useEmployees).toHaveBeenCalledWith({ page: 1 });
   });
 
   it("Should call useEmployees with a non-blank search query object when there is a search term", async () => {
@@ -374,10 +418,10 @@ describe("Homepage", () => {
     // assert
     expect(useEmployees).toHaveBeenCalledTimes(3);
     expect(firstClickQuery).not.toBe(secondClickQuery);
-    expect(secondClickQuery).toEqual({});
+    expect(secondClickQuery).toEqual({ page: 1 });
   });
 
-  it("Should call useEmployees with a blank search query when an invalid searchBy value is provided", async () => {
+  it("Should call useEmployees without search query values when an invalid searchBy value is provided", async () => {
     // arrange
     const user = userEvent.setup();
     render(
@@ -391,7 +435,154 @@ describe("Homepage", () => {
     // assert
     await waitFor(() => {
       expect(useEmployees).toHaveBeenCalledTimes(2);
-      expect(useEmployees).toHaveBeenLastCalledWith({});
+      expect(useEmployees).toHaveBeenLastCalledWith({ page: 1 });
+    });
+  });
+
+  it("Should call useEmployees with an updated page number when handlePage is called", async () => {
+    // arrange
+    const employeesResponse = {
+      currentPage: 1,
+      totalPages: 2,
+      totalResults: 20,
+      resultsPerPage: 10,
+      nextPage: 2,
+      previousPage: null,
+      data: employees,
+    };
+
+    vi.mocked(useEmployees).mockReturnValue({
+      data: employeesResponse,
+      isLoading: false,
+      isError: false,
+    } as any);
+
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Homepage />
+      </MemoryRouter>,
+    );
+    //act
+    const nextPageBtn = screen.getByTestId("next-page-btn");
+    await user.click(nextPageBtn);
+    // assert
+    await waitFor(() => {
+      expect(useEmployees).toHaveBeenCalledTimes(2);
+      expect(useEmployees).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          page: 1,
+        }),
+      );
+      expect(useEmployees).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          page: 2,
+        }),
+      );
+    });
+  });
+
+  it("Should call useEmployees with 1 when an invalid page number is provided", async () => {
+    // arrange
+    const employeesResponse = {
+      currentPage: 1,
+      totalPages: 2,
+      totalResults: 20,
+      resultsPerPage: 10,
+      nextPage: 2,
+      previousPage: null,
+      data: employees,
+    };
+
+    vi.mocked(useEmployees).mockReturnValue({
+      data: employeesResponse,
+      isLoading: false,
+      isError: false,
+    } as any);
+
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Homepage />
+        <LocationDisplay />
+      </MemoryRouter>,
+    );
+    //act
+    const invalidPageBtn = screen.getByTestId("invalid-page-btn");
+    const locationDisplay = screen.getByTestId("location-display");
+    await user.click(invalidPageBtn);
+    // assert
+    await waitFor(() => {
+      expect(useEmployees).toHaveBeenCalledTimes(2);
+      expect(useEmployees).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          page: 1,
+        }),
+      );
+      expect(locationDisplay).toHaveTextContent("?page=invalid");
+      expect(useEmployees).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          page: 1,
+        }),
+      );
+    });
+  });
+
+  it("Should clear page in query when search value changes", async () => {
+    // arrange
+    const employeesResponse = {
+      currentPage: 1,
+      totalPages: 2,
+      totalResults: 20,
+      resultsPerPage: 10,
+      nextPage: 2,
+      previousPage: null,
+      data: employees,
+    };
+
+    vi.mocked(useEmployees).mockReturnValue({
+      data: employeesResponse,
+      isLoading: false,
+      isError: false,
+    } as any);
+
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Homepage />
+      </MemoryRouter>,
+    );
+    //act
+    const nextPageBtn = screen.getByTestId("next-page-btn");
+    const searchBtn = screen.getByTestId("general-searchBy");
+    await user.click(nextPageBtn);
+    await user.click(searchBtn);
+    // assert
+    await waitFor(() => {
+      expect(useEmployees).toHaveBeenCalledTimes(3);
+      expect(useEmployees).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          page: 1,
+        }),
+      );
+      expect(useEmployees).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          page: 2,
+        }),
+      );
+      expect(useEmployees).toHaveBeenNthCalledWith(
+        3,
+        expect.objectContaining({
+          page: 1,
+          search: "Sarah",
+        }),
+      );
     });
   });
 
@@ -437,6 +628,40 @@ describe("Homepage", () => {
     });
   });
 
+  it("Should update the URL with an updated page number when handlePage is called", async () => {
+    // arrange
+    const employeesResponse = {
+      currentPage: 1,
+      totalPages: 2,
+      totalResults: 20,
+      resultsPerPage: 10,
+      nextPage: 2,
+      previousPage: null,
+      data: employees,
+    };
+
+    vi.mocked(useEmployees).mockReturnValue({
+      data: employeesResponse,
+      isLoading: false,
+      isError: false,
+    } as any);
+
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Homepage />
+        <LocationDisplay />
+      </MemoryRouter>,
+    );
+    //act
+    const nextPageBtn = screen.getByTestId("next-page-btn");
+    const locationDisplay = screen.getByTestId("location-display");
+    expect(locationDisplay).toHaveTextContent("");
+    await user.click(nextPageBtn);
+    // assert
+    expect(locationDisplay).toHaveTextContent("?page=2");
+  });
+
   it("Should update the URL with new search parameters on multiple searches", async () => {
     // arrange
     const user = userEvent.setup();
@@ -454,5 +679,41 @@ describe("Homepage", () => {
     expect(locationDisplay).toHaveTextContent("?search=Sarah");
     await user.click(emptysearchBtn);
     expect(locationDisplay).toHaveTextContent("");
+  });
+
+  it("Should clear page parameter in URL when search value changes", async () => {
+    // arrange
+    const employeesResponse = {
+      currentPage: 1,
+      totalPages: 2,
+      totalResults: 20,
+      resultsPerPage: 10,
+      nextPage: 2,
+      previousPage: null,
+      data: employees,
+    };
+
+    vi.mocked(useEmployees).mockReturnValue({
+      data: employeesResponse,
+      isLoading: false,
+      isError: false,
+    } as any);
+
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Homepage />
+        <LocationDisplay />
+      </MemoryRouter>,
+    );
+    //act
+    const nextPageBtn = screen.getByTestId("next-page-btn");
+    const searchBtn = screen.getByTestId("general-searchBy");
+    const locationDisplay = screen.getByTestId("location-display");
+    await user.click(nextPageBtn);
+    expect(locationDisplay).toHaveTextContent("?page=2");
+    await user.click(searchBtn);
+    // assert
+    expect(locationDisplay).toHaveTextContent("?search=Sarah");
   });
 });

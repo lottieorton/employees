@@ -9,6 +9,7 @@ import {
 } from "../../../interfaces/SearchQuery";
 import { useSearchParams } from "react-router-dom";
 import type { Employees } from "../../../interfaces/Employee";
+import Pagination from "../../Pagination/Pagination";
 
 const defaultEmployeesResponse: Employees = {
   currentPage: 1,
@@ -24,20 +25,27 @@ export default function Homepage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTerm = searchParams.get("search") || "";
   const searchBy = searchParams.get("searchBy") || "search";
+  const rawPage = searchParams.get("page");
+  const page =
+    rawPage && !isNaN(Number(rawPage)) ? Math.max(1, parseInt(rawPage)) : 1;
 
   const searchQuery = useMemo(() => {
-    const query: SearchQuery = {};
+    const query: SearchQuery = {
+      page,
+    };
     if (searchTerm.trim() !== "" && isSearchField(searchBy)) {
       query[searchBy] = searchTerm;
     }
     return query;
-  }, [searchTerm, searchBy]);
+  }, [searchTerm, searchBy, page]);
 
   const {
     data: employees = defaultEmployeesResponse,
     isLoading,
     isError,
   } = useEmployees(searchQuery);
+
+  const { data, ...paginationProps } = employees;
 
   const handleSearchUpdate = (term: string, by: string) => {
     setSearchParams((prev) => {
@@ -54,6 +62,18 @@ export default function Homepage() {
       } else {
         newParams.delete("searchBy");
       }
+
+      newParams.delete("page");
+      return Object.fromEntries(newParams);
+    });
+  };
+
+  const handlePageChange = (newPage: string) => {
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+
+      newParams.set("page", newPage);
+
       return Object.fromEntries(newParams);
     });
   };
@@ -66,12 +86,18 @@ export default function Homepage() {
         initialSearchByValue={searchBy}
         handleSearch={handleSearchUpdate}
       />
-      <EmployeeList
-        searchTerm={searchTerm}
-        employees={employees.data}
-        isLoading={isLoading}
-        isError={isError}
-      />
+      <div>
+        <EmployeeList
+          searchTerm={searchTerm}
+          employees={data}
+          isLoading={isLoading}
+          isError={isError}
+        />
+        <Pagination
+          pagination={paginationProps}
+          handlePageChange={handlePageChange}
+        />
+      </div>
     </section>
   );
 }
