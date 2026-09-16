@@ -3,7 +3,10 @@ import EmployeeList from "../../EmployeeList/EmployeeList";
 import Header from "../../Header/Header";
 import SearchBar from "../../SearchBar/SearchBar";
 import { useEmployees } from "../../../hooks/useEmployees";
-import type { SearchQuery } from "../../../interfaces/SearchQuery";
+import {
+  isSearchField,
+  type SearchQuery,
+} from "../../../interfaces/SearchQuery";
 import { useSearchParams } from "react-router-dom";
 import type { Employees } from "../../../interfaces/Employee";
 
@@ -24,7 +27,7 @@ export default function Homepage() {
 
   const searchQuery = useMemo(() => {
     const query: SearchQuery = {};
-    if (searchTerm.trim() !== "") {
+    if (searchTerm.trim() !== "" && isSearchField(searchBy)) {
       query[searchBy] = searchTerm;
     }
     return query;

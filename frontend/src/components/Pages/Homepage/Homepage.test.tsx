@@ -82,6 +82,14 @@ vi.mock("../../SearchBar/SearchBar", () => ({
       >
         Search Alex name
       </button>
+      <button
+        data-testid="invalid-searchBy"
+        onClick={() => {
+          handleSearch("Alex", "invalid");
+        }}
+      >
+        Invalid searchby
+      </button>
     </div>
   ),
 }));
@@ -367,6 +375,24 @@ describe("Homepage", () => {
     expect(useEmployees).toHaveBeenCalledTimes(3);
     expect(firstClickQuery).not.toBe(secondClickQuery);
     expect(secondClickQuery).toEqual({});
+  });
+
+  it("Should call useEmployees with a blank search query when an invalid searchBy value is provided", async () => {
+    // arrange
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <Homepage />
+      </MemoryRouter>,
+    );
+    //act
+    const searchBtn = screen.getByTestId("invalid-searchBy");
+    await user.click(searchBtn);
+    // assert
+    await waitFor(() => {
+      expect(useEmployees).toHaveBeenCalledTimes(2);
+      expect(useEmployees).toHaveBeenLastCalledWith({});
+    });
   });
 
   it("Should update the URL with a search term parameter when a search term is provided", async () => {

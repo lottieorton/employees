@@ -266,6 +266,7 @@ describe("useEmployeeFormOptions", () => {
     });
     // assert
     expect(useEmployees).toHaveBeenCalled();
+    expect(useEmployees).toHaveBeenCalledWith({ unpaged: true });
     expect(result.current.managerOptions).toHaveLength(2);
     expect(result.current.managerOptions).toEqual([
       {

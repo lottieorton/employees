@@ -7,6 +7,9 @@ import { useEmployees } from "./useEmployees";
 import type { FormOption, FormOptions } from "../interfaces/formInterfaces";
 import { getEmployeeFormEnums } from "../services/employees-service";
 import type { Employee, Employees } from "../interfaces/Employee";
+import type { SearchQuery } from "../interfaces/SearchQuery";
+
+const query: SearchQuery = { unpaged: true };
 
 export function useEmployeeFormOptions(
   control: Control<FormValues>,
@@ -46,7 +49,7 @@ export function useEmployeeFormOptions(
     data: employees = defaultEmployeesResponse,
     isFetching: isEmployeesFetching,
     isError: isEmployeesError,
-  } = useEmployees();
+  } = useEmployees(query);
 
   // Roles fetching
   useEffect(() => {
