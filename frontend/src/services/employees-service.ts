@@ -1,5 +1,6 @@
 import { FetchError } from "../errors/errors";
 import type { Employee, Employees } from "../interfaces/Employee";
+import type { FormOptions } from "../interfaces/formInterfaces";
 import type { SearchQuery } from "../interfaces/SearchQuery";
 import type { FormValues } from "../schemas/employeeSchema";
 
@@ -94,7 +95,7 @@ export const deleteEmployee = async (id: number): Promise<boolean> => {
   return true;
 };
 
-export const getEmployeeFormEnums = async () => {
+export const getEmployeeFormEnums = async (): Promise<FormOptions> => {
   const response = await fetch(`${API_URL}/employees/enums`);
   if (!response.ok) {
     throw new FetchError("Failed to fetch form enums");

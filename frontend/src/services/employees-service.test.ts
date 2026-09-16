@@ -4,6 +4,7 @@ import {
   deleteEmployee,
   getAllEmployees,
   getEmployeeById,
+  getEmployeeFormEnums,
   updateEmployee,
 } from "./employees-service";
 
@@ -150,6 +151,26 @@ describe("employees service", () => {
     data: mockEmployees,
   };
 
+  const mockFormOptions = {
+    employmentType: [
+      { label: "Full-Time Permanent", value: "Full-Time Permanent" },
+      { label: "Part-Time Permanent", value: "Part-Time Permanent" },
+      { label: "Contractor", value: "Contractor" },
+      { label: "Blank Employment", value: "" },
+    ],
+    pronouns: [
+      { label: "He/Him", value: "He/Him" },
+      { label: "She/Her", value: "She/Her" },
+      { label: "They/Them", value: "They/Them" },
+    ],
+    workSetup: [
+      { label: "Onsite", value: "Onsite" },
+      { label: "Hybrid", value: "Hybrid" },
+      { label: "Remote", value: "Remote" },
+      { label: "Blank Work Setup", value: "" },
+    ],
+  };
+
   describe("getAllEmployees", () => {
     it("Should return a page of employees on successful fetch with no search query", async () => {
       // arrange
@@ -190,7 +211,9 @@ describe("employees service", () => {
         json: async () => {},
       } as Response);
       // assert
-      await expect(getAllEmployees()).rejects.toThrow(FetchError);
+      await expect(getAllEmployees()).rejects.toThrow(
+        new FetchError("Failed to fetch employees"),
+      );
     });
 
     it("Should throw an error on failed fetch", async () => {
@@ -222,7 +245,9 @@ describe("employees service", () => {
 
     it("Should throw an error if no id provided", async () => {
       // assert
-      await expect(getEmployeeById()).rejects.toThrow("Invalid employee ID");
+      await expect(getEmployeeById()).rejects.toThrow(
+        new FetchError("Invalid employee ID"),
+      );
       expect(fetch).not.toHaveBeenCalled();
     });
 
@@ -234,7 +259,9 @@ describe("employees service", () => {
         json: async () => {},
       } as Response);
       // assert
-      await expect(getEmployeeById("100")).rejects.toThrow(FetchError);
+      await expect(getEmployeeById("100")).rejects.toThrow(
+        new FetchError("Failed to fetch employee"),
+      );
     });
 
     it("Should throw an error on failed fetch", async () => {
@@ -284,7 +311,7 @@ describe("employees service", () => {
       } as Response);
       // assert
       await expect(createEmployee(mockFormData)).rejects.toThrow(
-        "Couldn't create employee",
+        new FetchError("Couldn't create employee"),
       );
     });
 
@@ -354,7 +381,7 @@ describe("employees service", () => {
       } as Response);
       // assert
       await expect(updateEmployee(1, mockFormData)).rejects.toThrow(
-        "Couldn't update employee",
+        new FetchError("Couldn't update employee"),
       );
     });
 
@@ -421,7 +448,7 @@ describe("employees service", () => {
       } as Response);
       // assert
       await expect(deleteEmployee(1)).rejects.toThrow(
-        "Couldn't find employee with id 1",
+        new FetchError("Couldn't find employee with id 1"),
       );
     });
 
@@ -451,6 +478,48 @@ describe("employees service", () => {
       );
       // assert
       await expect(deleteEmployee(1)).rejects.toThrow(
+        "Network connection failed",
+      );
+    });
+  });
+
+  describe("getEmployeeFormEnums", () => {
+    it("Should return form options on successful fetch", async () => {
+      // arrange
+      vi.spyOn(window, "fetch").mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockFormOptions,
+      } as Response);
+      // act
+      const result = await getEmployeeFormEnums();
+      // assert
+      expect(result).toEqual(mockFormOptions);
+      expect(fetch).toHaveBeenCalledWith(
+        "http://localhost:8080/employees/enums",
+      );
+    });
+
+    it("Should throw a FetchError for !response.ok", async () => {
+      // arrange
+      vi.spyOn(window, "fetch").mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: async () => {},
+      } as Response);
+      // assert
+      await expect(getEmployeeFormEnums()).rejects.toThrow(
+        new FetchError("Failed to fetch form enums"),
+      );
+    });
+
+    it("Should throw an error on failed fetch", async () => {
+      // arrange
+      vi.spyOn(window, "fetch").mockRejectedValueOnce(
+        new Error("Network connection failed"),
+      );
+      // assert
+      await expect(getEmployeeFormEnums()).rejects.toThrow(
         "Network connection failed",
       );
     });
