@@ -40,7 +40,7 @@ This application is a full-stack employee management system designed to help use
 
 - **Frontend:** React, TypeScript, React Query (TanStack Query), React Hook Form, React Testing Library, React Router, Tailwind.
 - **Backend:** Java, Spring Boot, Spring Data JPA, MySQL, OpenAPI/Swagger.
-- **Testing & Tools:** Vitest, REST Assured, Maven, Git, GitHub Actions.
+- **Testing & Tools:** Playwright, Vitest, REST Assured, Maven, Git, GitHub Actions.
 
 **Why this stack?**
 
@@ -173,7 +173,6 @@ SPRING_PROFILE=dev
 
 ## Future Goals
 
-- **Frontend Testing:** Create end-to-end testing suites.
 - **Search Filtering:** Implement employee filtering with dropdowns menus on the frontend.
 - **Page size selection:** Implement page size through a dropdown on the frontend.
 - **Multipage Form:** Update the employee form to be spread over multiple pages.
@@ -276,12 +275,23 @@ SPRING_PROFILE=dev
 - Implemented fully responsive frontend pagination paired with automatic scroll-to-top behavior
 - Added comprehensive unit tests for fetching form enums
 
+**17/09/2026:** Playwright Configuration and Test Creation
+
+- Configured Playwright in frontend
+- Implemented end-to-end tests calling my local database
+
+**18/09/2026:** Playwright Addition to the CI/CD Pipeline
+
+- Refactored Playwright tests to use an in-memory test database with seeder
+- Configured Playwright tests to run with the frontend Node.js tests
+
 ---
 
 ## What did you struggle with?
 
 - **Employee Testing:** Time consuming and refactoring needed when testing this complex endpoint with query logic and dependencies.
-- **Implementing Form Validation:** Difficulty handling the various types of field authentications through zod.
+- **Implementing Form Validation:** Difficulty handling the various types of field validations through zod.
+- **Implementing Playwright with CI/CD pipeline:** Difficulty configuring the in-memory database and seeders to work as needed for the Playwright and backend End-to-End tests
 
 ---
 
