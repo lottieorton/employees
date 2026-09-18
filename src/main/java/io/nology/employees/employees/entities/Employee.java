@@ -35,6 +35,7 @@ public class Employee {
     @Column(name = "preferred_name")
     private String preferredName;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Pronouns pronouns;
 

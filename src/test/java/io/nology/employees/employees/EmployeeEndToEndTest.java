@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(scripts = "/sql/cleanup.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-public class EmployeeEndToEnd {
+public class EmployeeEndToEndTest {
     @LocalServerPort
     private int port;
 
