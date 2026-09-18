@@ -13,7 +13,7 @@ export default defineConfig({
   webServer: [
     {
       command:
-        "cd .. && ./mvnw spring-boot:run -Dspring-boot.run.profiles=test",
+        "cd .. && ./mvnw spring-boot:run -Dspring-boot.run.profiles=playwright",
       // Checks a successful request against this endpoint
       url: "http://localhost:8081/employees",
       reuseExistingServer: !process.env.CI,
