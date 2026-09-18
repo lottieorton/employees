@@ -41,7 +41,7 @@ test.describe("EmployeePage", () => {
       ).toHaveText("C");
     } finally {
       // clean up
-      await request.delete(`http://localhost:8080/employees/${testEmployeeId}`);
+      await request.delete(`http://localhost:8081/employees/${testEmployeeId}`);
     }
   });
 
@@ -63,6 +63,7 @@ test.describe("EmployeePage", () => {
     await employeePage.clickDeleteBtn();
 
     await expect(page).toHaveURL("/");
+    await expect(page.getByRole("heading", { name: "Team" })).toBeVisible();
   });
 
   test("Clicks `Back To Team` navigating to homepage", async ({
@@ -80,8 +81,9 @@ test.describe("EmployeePage", () => {
       await employeePage.clickBackToTeamLink();
 
       await expect(page).toHaveURL("/");
+      await expect(page.getByRole("heading", { name: "Team" })).toBeVisible();
     } finally {
-      await request.delete(`http://localhost:8080/employees/${testEmployeeId}`);
+      await request.delete(`http://localhost:8081/employees/${testEmployeeId}`);
     }
   });
 });

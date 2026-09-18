@@ -12,6 +12,7 @@ test("Clicks cancel btn on form and navigates to the home page", async ({
   const createPage = new CreatePage(page);
   await createPage.clickCancelBtn();
   await expect(page).toHaveURL("/");
+  await expect(page.getByRole("heading", { name: "Team" })).toBeVisible();
 });
 
 test("Clicks 'Back To Team' btn on form and navigates to the homepage", async ({
@@ -20,4 +21,5 @@ test("Clicks 'Back To Team' btn on form and navigates to the homepage", async ({
   const createPage = new CreatePage(page);
   await createPage.clickBackToTeamLink();
   await expect(page).toHaveURL("/");
+  await expect(page.getByRole("heading", { name: "Team" })).toBeVisible();
 });

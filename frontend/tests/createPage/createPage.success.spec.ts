@@ -14,11 +14,14 @@ test("Fills form, creates employee and redirects home", async ({
 
   try {
     await expect(page).toHaveURL("/");
+    await expect(page.getByRole("heading", { name: "Team" })).toBeVisible();
     expect(createdEmployeeId).not.toBeNull();
   } finally {
     // clean up
     if (createdEmployeeId) {
-      await request.delete(`/employees/${createdEmployeeId}`);
+      await request.delete(
+        `http://localhost:8081/employees/${createdEmployeeId}`,
+      );
     }
   }
 });

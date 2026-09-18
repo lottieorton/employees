@@ -54,7 +54,7 @@ export class EmployeePage {
     overrides = {},
   ): Promise<string> {
     // Grab a role id from database
-    const roleResponse = await request.get("http://localhost:8080/roles");
+    const roleResponse = await request.get("http://localhost:8081/roles");
     if (!roleResponse.ok()) {
       throw new Error(
         `Failed to fetch roles: ${roleResponse.status()} ${await roleResponse.text()}`,
@@ -64,7 +64,7 @@ export class EmployeePage {
 
     // Create Address and grab id
     const addressResponse = await request.post(
-      "http://localhost:8080/addresses",
+      "http://localhost:8081/addresses",
       {
         data: defaultAddress,
       },
@@ -78,7 +78,7 @@ export class EmployeePage {
 
     // Create Employee
     const employeeResponse = await request.post(
-      "http://localhost:8080/employees",
+      "http://localhost:8081/employees",
       {
         data: {
           ...defaultEmployee,

@@ -14,6 +14,9 @@ test("Navigates to the create user page when user goes to add employee", async (
 
   await home.clickAddEmployeeBtn();
   await expect(page).toHaveURL(/.*create/);
+  await expect(
+    page.getByRole("heading", { name: "Create New Employee" }),
+  ).toBeVisible();
 });
 
 test("Navigates to a specific user's page when user goes to view an employee", async ({
@@ -24,4 +27,7 @@ test("Navigates to a specific user's page when user goes to view an employee", a
   await expect(page.getByRole("article").first()).toBeVisible();
   const expectedPath = await home.clickFirstViewEmployeeBtn();
   await expect(page).toHaveURL(new RegExp(`.*${expectedPath}$`));
+  await expect(
+    page.getByRole("heading", { name: "Personal Information" }),
+  ).toBeVisible();
 });
