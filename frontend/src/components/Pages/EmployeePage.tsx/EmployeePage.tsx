@@ -12,11 +12,13 @@ import ErrorBanner from "../../ErrorBanner/ErrorBanner";
 import type { FormValues } from "../../../schemas/employeeSchema";
 import { updateAddress } from "../../../services/addresses-service";
 import { toast } from "react-toastify";
+import Modal from "../../Modal/Modal";
 
 export default function EmployeePage() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   const navigate = useNavigate();
   const { id } = useParams();
@@ -157,13 +159,23 @@ export default function EmployeePage() {
       {isEditing ? (
         <EmployeeForm
           handlePageSubmit={handleSubmit}
-          handleWarningClick={handleDeleteClick}
+          handleWarningClick={() => setIsModalOpen(true)}
           submitBtnText={isSaving ? "Saving..." : "Save Changes"}
-          warningBtnText={isDeleting ? "Deleting..." : "Delete Employee"}
+          warningBtnText={"Delete Employee"}
           employee={employee}
         />
       ) : (
         <EmployeeDetails employee={employee} />
+      )}
+      {isModalOpen && (
+        <Modal
+          firstName={employee.firstName}
+          lastName={employee.lastName}
+          role={`${employee.role?.name} - ${employee.role?.department}`}
+          handleClick={handleDeleteClick}
+          closeModal={() => setIsModalOpen(false)}
+          actionText={isDeleting ? "Deleting..." : "Delete"}
+        />
       )}
     </section>
   );

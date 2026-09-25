@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import EmployeePage from "./EmployeePage";
 import {
   useDeleteEmployee,
@@ -27,6 +27,33 @@ vi.mock("../../EmployeeDetails/EmployeeDetails", () => ({
       Employee Details for {employee.firstName}
     </div>
   ),
+}));
+
+vi.mock("../../Modal/Modal", () => ({
+  default: ({
+    firstName,
+    lastName,
+    role,
+    handleClick,
+    closeModal,
+    actionText,
+  }: {
+    firstName: string;
+    lastName: string;
+    role: string;
+    handleClick: () => void;
+    closeModal: () => void;
+    actionText: string;
+  }) => {
+    return (
+      <section data-testid="mock-modal">
+        <p>{`${firstName} ${lastName}`}</p>
+        <p>{`${role}`}</p>
+        <button onClick={closeModal}>Close</button>
+        <button onClick={handleClick}>{actionText}</button>
+      </section>
+    );
+  },
 }));
 
 vi.mock("react-toastify", () => ({
@@ -125,7 +152,7 @@ describe("EmployeePage", () => {
         firstName: "Sarah",
         lastName: "Jenkins",
         emailAddress: "sarah@example.com",
-        role: { name: "Software Developer" },
+        role: { name: "Software Developer", department: "Engineering" },
         address: { id: 2 },
       },
       isLoading: false,
@@ -486,6 +513,55 @@ describe("EmployeePage", () => {
     expect(formSubmitBtn).toHaveTextContent("Save Changes");
   });
 
+  it("Should render modal with correct details when open function called from form", async () => {
+    // arrange
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <EmployeePage />
+      </MemoryRouter>,
+    );
+    // act
+    const viewEditBtn = screen.getByRole("button", { name: "Edit" });
+    await user.click(viewEditBtn);
+    expect(viewEditBtn).toHaveTextContent("View");
+    const deleteBtn = screen.getByRole("button", { name: "Delete Employee" });
+    await user.click(deleteBtn);
+    const modal = screen.getByTestId("mock-modal");
+    // assert
+    expect(modal).toBeInTheDocument();
+    const modalView = within(modal);
+    expect(modalView.getByText("Sarah Jenkins")).toBeInTheDocument();
+    expect(
+      modalView.getByText("Software Developer - Engineering"),
+    ).toBeInTheDocument();
+    expect(
+      modalView.getByRole("button", { name: "Delete" }),
+    ).toBeInTheDocument();
+  });
+
+  it("Should close the modal when the closeModal function is called", async () => {
+    // arrange
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <EmployeePage />
+      </MemoryRouter>,
+    );
+    // act
+    const viewEditBtn = screen.getByRole("button", { name: "Edit" });
+    await user.click(viewEditBtn);
+    expect(viewEditBtn).toHaveTextContent("View");
+    const deleteBtn = screen.getByRole("button", { name: "Delete Employee" });
+    await user.click(deleteBtn);
+    const modal = screen.getByTestId("mock-modal");
+    expect(modal).toBeInTheDocument();
+    const closeBtn = screen.getByRole("button", { name: "Close" });
+    await user.click(closeBtn);
+    // assert
+    expect(modal).not.toBeInTheDocument();
+  });
+
   it("Should call delete employee on click warning button and navigate to homepage on successful delete", async () => {
     // arrange
     mockDeleteMutate.mockImplementation((_variables, options) => {
@@ -503,8 +579,11 @@ describe("EmployeePage", () => {
     expect(viewEditBtn).toHaveTextContent("View");
     const deleteBtn = screen.getByRole("button", { name: "Delete Employee" });
     await user.click(deleteBtn);
+    const modal = screen.queryByTestId("mock-modal");
+    expect(modal).toBeInTheDocument();
+    const modalDeleteBtn = screen.getByRole("button", { name: "Delete" });
+    await user.click(modalDeleteBtn);
     // assert
-    expect(deleteBtn).toHaveTextContent("Deleting...");
     expect(mockDeleteMutate).toHaveBeenCalledOnce();
     expect(mockDeleteMutate).toHaveBeenCalledWith(
       { addressId: 2, id: 1 },
@@ -517,7 +596,7 @@ describe("EmployeePage", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/");
   });
 
-  it("Should update warning button text while deleting is pending", async () => {
+  it("Should update warning button text while delete is pending", async () => {
     const user = userEvent.setup();
     mockDeleteMutate.mockImplementation(() => {});
 
@@ -533,7 +612,12 @@ describe("EmployeePage", () => {
     expect(viewEditBtn).toHaveTextContent("View");
     const deleteBtn = screen.getByRole("button", { name: "Delete Employee" });
     await user.click(deleteBtn);
-    expect(deleteBtn).toHaveTextContent("Deleting...");
+    const modal = screen.queryByTestId("mock-modal");
+    expect(modal).toBeInTheDocument();
+    const modalDeleteBtn = screen.getByRole("button", { name: "Delete" });
+    await user.click(modalDeleteBtn);
+    // assert
+    expect(modalDeleteBtn).toHaveTextContent("Deleting...");
   });
 
   it("Should do nothing if no employee provided when click delete button", () => {
@@ -576,6 +660,10 @@ describe("EmployeePage", () => {
     expect(viewEditBtn).toHaveTextContent("View");
     const deleteBtn = screen.getByRole("button", { name: "Delete Employee" });
     await user.click(deleteBtn);
+    const modal = screen.queryByTestId("mock-modal");
+    expect(modal).toBeInTheDocument();
+    const modalDeleteBtn = screen.getByRole("button", { name: "Delete" });
+    await user.click(modalDeleteBtn);
     // assert
     expect(mockDeleteMutate).toHaveBeenCalledOnce();
     expect(mockDeleteMutate).toHaveBeenCalledWith(
@@ -610,6 +698,10 @@ describe("EmployeePage", () => {
     expect(viewEditBtn).toHaveTextContent("View");
     const deleteBtn = screen.getByRole("button", { name: "Delete Employee" });
     await user.click(deleteBtn);
+    const modal = screen.queryByTestId("mock-modal");
+    expect(modal).toBeInTheDocument();
+    const modalDeleteBtn = screen.getByRole("button", { name: "Delete" });
+    await user.click(modalDeleteBtn);
     // assert
     expect(mockDeleteMutate).toHaveBeenCalledOnce();
     expect(mockDeleteMutate).toHaveBeenCalledWith(

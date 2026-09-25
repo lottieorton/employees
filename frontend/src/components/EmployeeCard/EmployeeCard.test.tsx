@@ -1,9 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import EmployeeCard from "./EmployeeCard";
-import { useDeleteEmployee } from "../../hooks/useEmployees";
 import { MemoryRouter } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
-import { toast } from "react-toastify";
 
 vi.mock("react-toastify", () => ({
   toast: {
@@ -11,19 +9,10 @@ vi.mock("react-toastify", () => ({
   },
 }));
 
-vi.mock("../../hooks/useEmployees", () => ({
-  useDeleteEmployee: vi.fn(),
-}));
-
 describe("Employee Card", () => {
-  const mockMutate = vi.fn();
+  const mockOpenModal = vi.fn();
   beforeEach(() => {
     vi.clearAllMocks();
-
-    vi.mocked(useDeleteEmployee).mockReturnValue({
-      mutate: mockMutate,
-      isPending: false,
-    } as any);
   });
 
   const employee = {
@@ -63,7 +52,11 @@ describe("Employee Card", () => {
     // arrange
     render(
       <MemoryRouter>
-        <EmployeeCard employee={employee} bgColor="bg-white" />
+        <EmployeeCard
+          employee={employee}
+          bgColor="bg-white"
+          openModal={mockOpenModal}
+        />
       </MemoryRouter>,
     );
     // act
@@ -84,95 +77,24 @@ describe("Employee Card", () => {
     expect(screen.queryByLabelText("Loading spinner")).not.toBeInTheDocument();
   });
 
-  it("Should call mutation on useDeleteEmployee with correct values when button clicked", async () => {
+  it("Should call openModal when delete button clicked", async () => {
     // arrange
     const user = userEvent.setup();
     render(
       <MemoryRouter>
-        <EmployeeCard employee={employee} bgColor="bg-white" />
+        <EmployeeCard
+          employee={employee}
+          bgColor="bg-white"
+          openModal={mockOpenModal}
+        />
       </MemoryRouter>,
     );
     // act
-    expect(mockMutate).not.toHaveBeenCalled();
+    expect(mockOpenModal).not.toHaveBeenCalled();
     const deleteBtn = screen.getByRole("button");
     await user.click(deleteBtn);
     // assert
-    expect(mockMutate).toHaveBeenCalledOnce();
-    expect(mockMutate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        addressId: 4,
-        id: 1,
-      }),
-      {
-        onError: expect.any(Function),
-      },
-    );
-  });
-
-  it("Should have a specific toast message on deleting a manager error", async () => {
-    // arrange
-    const user = userEvent.setup();
-    vi.mocked(useDeleteEmployee).mockReturnValue({
-      mutate: mockMutate.mockImplementation((_variables, options) => {
-        options.onError(
-          new Error(
-            "Cannot delete this employee as they are currently a manager of other employee(s)",
-          ),
-        );
-      }),
-      isPending: false,
-    } as any);
-    render(
-      <MemoryRouter>
-        <EmployeeCard employee={employee} bgColor="bg-white" />
-      </MemoryRouter>,
-    );
-    // act
-    const deleteBtn = screen.getByRole("button");
-    await user.click(deleteBtn);
-    // assert
-    expect(toast.error).toHaveBeenCalledWith(
-      "Cannot delete this employee as they are currently a manager of other employee(s)",
-    );
-  });
-
-  it("Should have a default toast message on a general delete error", async () => {
-    // arrange
-    const user = userEvent.setup();
-    vi.mocked(useDeleteEmployee).mockReturnValue({
-      mutate: mockMutate.mockImplementation((_variables, options) => {
-        options.onError(new Error("Deletion error"));
-      }),
-      isPending: false,
-    } as any);
-    render(
-      <MemoryRouter>
-        <EmployeeCard employee={employee} bgColor="bg-white" />
-      </MemoryRouter>,
-    );
-    // act
-    const deleteBtn = screen.getByRole("button");
-    await user.click(deleteBtn);
-    // assert
-    expect(toast.error).toHaveBeenCalledWith(
-      "Oops, something went wrong when deleting this employee.",
-    );
-  });
-
-  it("Should render loading spinner when delete is pending", async () => {
-    // arrange
-    vi.mocked(useDeleteEmployee).mockReturnValue({
-      mutate: mockMutate,
-      isPending: true,
-    } as any);
-    render(
-      <MemoryRouter>
-        <EmployeeCard employee={employee} bgColor="bg-white" />
-      </MemoryRouter>,
-    );
-    // act
-    const loadingSpinner = screen.getByLabelText("Loading spinner");
-    // assert
-    expect(loadingSpinner).toBeInTheDocument();
+    expect(mockOpenModal).toHaveBeenCalledOnce();
+    expect(mockOpenModal).toHaveBeenCalledWith(employee);
   });
 });

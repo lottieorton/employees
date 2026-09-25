@@ -59,8 +59,10 @@ test.describe("EmployeePage", () => {
     await employeePage.clickEditBtn();
     await expect(page.getByRole("button", { name: "View" })).toBeVisible();
 
-    // delete employee
+    // open modal and delete employee
     await employeePage.clickDeleteBtn();
+    await expect(page.getByText("Remove employee?")).toBeVisible();
+    await employeePage.clickModalDeleteBtn();
 
     await expect(page).toHaveURL("/");
     await expect(page.getByRole("heading", { name: "Team" })).toBeVisible();

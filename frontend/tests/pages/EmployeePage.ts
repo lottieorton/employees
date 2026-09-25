@@ -49,6 +49,12 @@ export class EmployeePage {
     await this.page.getByRole("link", { name: "← Back To Team" }).click();
   }
 
+  async clickModalDeleteBtn() {
+    await this.page
+      .getByRole("button", { name: "Delete", exact: true })
+      .click();
+  }
+
   async createTestEmployee(
     request: APIRequestContext,
     overrides = {},
