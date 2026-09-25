@@ -38,3 +38,6 @@ build/
 ### Logging files
 logs/
 request-results.log
+
+### Playwright
+/test-results/ 
